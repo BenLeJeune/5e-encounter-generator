@@ -1,23 +1,26 @@
 import React, {useEffect, useState} from 'react';
 import logo from './logo.svg';
 import './App.css';
-
-// Bootstrap CSS
-import "bootstrap/dist/css/bootstrap.min.css";
 import PlayersManager from "./components/PlayersManager";
 import {PlayerData} from "./types";
 import {PlayerContext} from "./context/PlayerContext";
+import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
+
+// Bootstrap CSS
+import "bootstrap/dist/css/bootstrap.min.css";
+import Bestiary from "./components/Bestiary";
 
 function App() {
 
     const playerState = useState<PlayerData[]>([{level:undefined, num:undefined}])
+    const combatState = useState<string[]>([])
 
     const [ graphData, setGraphData ] = useState(undefined)
 
     useEffect(() => {
         const getGraph = async() => {
-            const graph_data = await fetch('5e-encounter-generator/data/test_graph.json')
+            const graph_data = await fetch('5e-encounter-generator/data/graph.json')
             return await graph_data.json()
         }
 
@@ -28,7 +31,6 @@ function App() {
 
 
     return <>
-      <PlayerContext.Provider value={playerState}>
           <div className="container-xxl">
               <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
                   <a href="/5e-encounter-generator"
@@ -45,8 +47,9 @@ function App() {
                   </ul>
               </header>
           </div>
+        <PlayerContext.Provider value={playerState}>
           <div className="container">
-              <div className="row">
+              <div className="row" style={{minHeight: "500px"}}>
                   <div className="col-5 border">
                       <PlayersManager/>
                   </div>
@@ -57,7 +60,19 @@ function App() {
                   </div>
               </div>
           </div>
-      </PlayerContext.Provider>
+        </PlayerContext.Provider>
+        <CombatContext.Provider value={combatState}>
+          <div className="container">
+              <div className="row">
+                      <div className="col-5 border">
+                          <Bestiary/>
+                      </div>
+                      <div className="col border">
+                          <p>Combat</p>
+                      </div>
+              </div>
+          </div>
+        </CombatContext.Provider>
   </>
 }
 

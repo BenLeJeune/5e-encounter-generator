@@ -2,6 +2,7 @@ import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import * as d3 from "d3";
 import {Node, Link} from "../types";
 import {ForceGraph2D} from "react-force-graph";
+import {toTitleCase} from "../helpers/misc_helpers";
 
 type GraphProps = {
     graph: {
@@ -32,6 +33,8 @@ export default function Graph({graph}:GraphProps) {
     return <ForceGraph2D
             height={dimensions.height}
             width={dimensions.width}
+            nodeColor={() => "#0d6efd"} linkColor={() => "#6c757d"}
+            nodeLabel={node => toTitleCase((node as any)['id'])}
             graphData={graph}
     />
 }

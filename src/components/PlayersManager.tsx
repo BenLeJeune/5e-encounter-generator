@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {Xmark} from "iconoir-react";
 import {PlayerContext} from "../context/PlayerContext";
 import {valid_level} from "../types";
-import {calculatePartyXP, DIFFICULTIES} from "../helpers/xp_calculations";
+import {calculateDailyXP, calculatePartyXP, DIFFICULTIES} from "../helpers/xp_calculations";
 
 export default function PlayersManager() {
 
@@ -36,13 +36,22 @@ export default function PlayersManager() {
                 {
                     DIFFICULTIES.map(diff => <div className="row" key={diff}>
                         <div className="col">
-                            <span className="text-capitalize">{diff}</span>
+                            <p className="text-capitalize">{diff}</p>
                         </div>
-                        <div className="col">
-                            <span>{calculatePartyXP(playerData)[diff]}</span>
+                        <div className="col-4">
+                            <p className="text-end">{calculatePartyXP(playerData)[diff]}</p>
                         </div>
                     </div>)
                 }
+                <hr/>
+                <div className="row">
+                    <div className="col">
+                        <p className="text-muted">Daily Budget</p>
+                    </div>
+                    <div className="col-4">
+                        <p className="text-muted text-end">{calculateDailyXP(playerData)}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

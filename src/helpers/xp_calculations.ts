@@ -20,6 +20,17 @@ export function calculatePartyXP(party:PlayerData[]) {
     return budget
 }
 
+export function calculateDailyXP(party:PlayerData[]) {
+    let daily = 0
+    party.forEach(player => {
+        const {level, num} = player
+        if (level !== undefined && num !== undefined) {
+            daily += XP_DAILY[level - 1] * num
+        }
+    })
+    return daily
+}
+
 const XP_THRESHOLDS = {
     "easy": [
         25, 50, 75, 125, 250, 300, 350, 450, 550, 600,
@@ -39,4 +50,53 @@ const XP_THRESHOLDS = {
     ]
 } as { [key in Difficulty]: number[] }
 
+const XP_DAILY = [
+    300, 600, 1200, 1700, 3500, 4000, 5000, 6000, 7500,
+    9000, 10500, 11500, 13500, 15000, 18000, 20000, 25000, 27000, 30000, 40000
+]
+
 export const DIFFICULTIES = ["easy", "medium", "hard", "deadly"] as Difficulty[]
+
+export const parseCr = (cr: string) => {
+    if (cr === "0.125") return "1/8"
+    else if (cr === "0.25") return "1/4"
+    else if (cr === "0.5") return "1/2"
+    else return cr
+}
+
+export const CR_TO_XP = {
+    0: 0,
+    0.125: 25,
+    0.25: 50,
+    0.5: 100,
+    1: 200,
+    2: 450,
+    3: 700,
+    4: 1100,
+    5: 1800,
+    6: 2300,
+    7: 2900,
+    8: 3900,
+    9: 5000,
+    10: 5900,
+    11: 7200,
+    12: 8400,
+    13: 10000,
+    14: 11500,
+    15: 13000,
+    16: 15000,
+    17: 18000,
+    18: 20000,
+    19: 22000,
+    20: 25000,
+    21: 33000,
+    22: 41000,
+    23: 50000,
+    24: 62000,
+    25: 75000,
+    26: 90000,
+    27: 105000,
+    28: 120000,
+    29: 135000,
+    30: 155000
+} as {[key:number]:number}
