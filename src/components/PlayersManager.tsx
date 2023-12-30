@@ -1,8 +1,8 @@
 import React, {useContext} from 'react';
 import {Xmark} from "iconoir-react";
-import {PlayerContext} from "./Context/PlayerContext";
-import {valid_level} from "./types";
-import {calculatePartyXP, DIFFICULTIES} from "./helpers/xp_calculations";
+import {PlayerContext} from "../context/PlayerContext";
+import {valid_level} from "../types";
+import {calculatePartyXP, DIFFICULTIES} from "../helpers/xp_calculations";
 
 export default function PlayersManager() {
 
