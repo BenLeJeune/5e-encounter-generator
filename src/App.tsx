@@ -10,6 +10,7 @@ import Graph from "./components/Graph";
 // Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css";
 import Bestiary from "./components/Bestiary";
+import {varUrl} from "./helpers/misc_helpers";
 
 function App() {
 
@@ -20,7 +21,7 @@ function App() {
 
     useEffect(() => {
         const getGraph = async() => {
-            const graph_data = await fetch('5e-encounter-generator/data/graph.json')
+            const graph_data = await fetch(varUrl('/data/graph.json'))
             return await graph_data.json()
         }
 

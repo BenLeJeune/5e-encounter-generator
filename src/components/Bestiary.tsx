@@ -4,6 +4,7 @@ import {Monster} from "../types";
 import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
 import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
 import {PlusCircle} from "iconoir-react";
+import {varUrl} from "../helpers/misc_helpers";
 
 type Bestiary_Props = {}
 
@@ -13,7 +14,7 @@ export default function Bestiary(props: Bestiary_Props) {
 
     useEffect(() => {
         const fetchBestiary = async () => {
-            const bestiary = await fetch('5e-encounter-generator/data/bestiary.csv')
+            const bestiary = await fetch(varUrl('data/bestiary.csv'))
             return bestiary.text();
         }
 
