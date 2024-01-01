@@ -23,11 +23,8 @@ export default function Graph({graph}:GraphProps) {
             let {nodes, links} = graph
             let direct_links = links.filter(link => link.source.id in combat || link.target.id in combat)
             let valid_nodes = direct_links.reduce((p, n) => [...p, n.source.id, n.target.id], [] as string[])
-            console.log(valid_nodes)
-            console.log(nodes)
             nodes = nodes.filter(node => valid_nodes.indexOf(node.id) !== -1)
             links = links.filter(link => valid_nodes.indexOf(link.source.id) !== -1 && valid_nodes.indexOf(link.target.id) !== -1)
-            console.log(nodes)
             return {nodes, links}
         }
     }
@@ -51,7 +48,8 @@ export default function Graph({graph}:GraphProps) {
             height={dimensions.height}
             width={dimensions.width}
             nodeColor={node => node.id in combat || Object.keys(combat).length === 0 ? "#0d6efd" : "#6c757d"}
-            linkColor={() => "#6c757d"}
+            linkColor={link => link.target.id in combat && link.source.id in combat? "#0d6efd" : "#6c757d"}
+            linkWidth={link => link.target.id in combat && link.source.id in combat? 3 : 1}
             nodeLabel={node => toTitleCase((node as any)['id'])}
             nodeVal={node => node.id in combat ? 1.5 : 1}
             graphData={currentGraphData()}

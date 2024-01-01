@@ -40,7 +40,6 @@ function App() {
         getBestiary().then(bestiary => {
             console.log("BESTIARY")
             const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
-            console.log(bestiary_obj)
             const sortedBestiary = (bestiary_obj as Monster[]).slice(0, -1).sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
             setBestiaryData(sortedBestiary)
         })

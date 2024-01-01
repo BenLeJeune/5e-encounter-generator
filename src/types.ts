@@ -11,7 +11,7 @@ export type Difficulty = "easy" | "medium" | "hard" | "deadly"
 
 
 export type Node = {id:string}
-export type Link = {source:Node, target:Node}
+export type Link = {source:Node, target:Node, weight:number}
 
 
 export type Monster_Type = "aberration" | "beast" | "celestial" | "construct" | "dragon" |

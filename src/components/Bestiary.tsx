@@ -188,7 +188,7 @@ export function BestiaryRow({monster}:BestiaryRowProps) {
             </p>
         </div>
         <div className="col-2 justify-content-end align-items-center d-flex">
-            <button type="button" onClick={handleClick} className="btn btn-primary">
+            <button type="button" onClick={handleClick} className="btn btn-outline-primary">
                 Add
             </button>
         </div>

@@ -1,8 +1,9 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {CombatContext} from "../context/CombatContext";
 import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
 import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
 import {Link, Monster, Node} from "../types";
+import {GenerateRandomEncounter} from "../GenerateEncounter";
 
 type CombatProps = {
     bestiary: Monster[],
@@ -20,6 +21,29 @@ export default function Combat({bestiary, graph}:CombatProps) {
     }
 
     const [combat, setCombat] = useContext(CombatContext)
+    const [numMonsters, setNumMonsters] = useState(3)
+
+    const generateEncounter = () => {
+        const encounter = GenerateRandomEncounter(graph, bestiary, Object.keys(combat), numMonsters)
+        setCombat(prev => {
+            const obj = {} as {[mon:string]:number}
+            encounter.forEach(monster => {
+                if (!(monster in combat)) {
+                    obj[monster] = 1
+                }
+            })
+            return {...prev, ...obj}
+        })
+    }
+
+    const handleNumChange = (e:React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault()
+        setNumMonsters(Number(e.target.value))
+    }
+
+    const clearEncounter = () => {
+        setCombat({})
+    }
 
     return <div className="container mb-1 d-flex flex-column">
         <div className="row">
@@ -28,11 +52,11 @@ export default function Combat({bestiary, graph}:CombatProps) {
                 <hr/>
             </div>
             <div className="col">
-                <h6>Dropdown?</h6>
+                <button className="btn btn-outline-secondary">Advanced</button>
             </div>
         </div>
         <div className="col flex-grow-1 position-relative">
-            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden">
+            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden px-2">
                 {
                     Object.keys(combat).map(monster => [monster, monsterLookup(monster)] as [string, Monster|null])
                         .filter(m => m[1] !== null).map(
@@ -41,6 +65,35 @@ export default function Combat({bestiary, graph}:CombatProps) {
                 }
             </div>
         </div>
+        <div className="row">
+            <div className="col-auto">
+                <button onClick={generateEncounter} className="btn btn-outline-primary btn-lg">
+                    Generate Encounter
+                </button>
+            </div>
+            <div className="col d-flex flex-column justify-content-center">
+                <div className="input-group">
+                    <select className="form-select">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option selected value="hard">Hard</option>
+                        <option value="deadly">Deadly</option>
+                    </select>
+                    <input className="form-control" type="number" value={numMonsters} onChange={handleNumChange}/>
+                    <select className="form-select">
+                        <option selected value="random">Random</option>
+                        <option value="boss_minions">Boss & Minions</option>
+                        <option value="2_monsters">2 Monsters</option>
+                    </select>
+                </div>
+            </div>
+            <div className="col-auto d-flex flex-column justify-content-center">
+                <button className="btn btn-outline-danger" onClick={clearEncounter}>
+                    Clear
+                </button>
+            </div>
+        </div>
+
     </div>
 }
 
@@ -75,7 +128,7 @@ export function CombatRow({monster}:CombatRowProps) {
                 }
             </p>
         </div>
-        <div className="col-3 justify-content-end align-items-center d-flex">
+        <div className="col-auto justify-content-end align-items-center d-flex">
             <div className="input-group">
                 <button type="button" onClick={handleChange(-1)} className="btn btn-outline-secondary">-</button>
                 <div className="input-group-text" id="btnGroupAddon">{combat[monster.monster_name]}</div>
