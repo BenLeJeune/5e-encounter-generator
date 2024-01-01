@@ -12,10 +12,10 @@ export default function PlayersManager() {
         setPlayerData(prev => [...prev, {level:undefined, num:undefined}])
     }
 
-    return <div className="container">
-        <div className="row">
+    return <>
             <div className="col">
                 <h4>Your Party</h4>
+                <hr/>
                 <div className="row">
                     <div className="col">
                         <h6>Players</h6>
@@ -33,13 +33,14 @@ export default function PlayersManager() {
             </div>
             <div className="col">
                 <h4>Xp</h4>
+                <hr/>
                 {
                     DIFFICULTIES.map(diff => <div className="row" key={diff}>
                         <div className="col">
-                            <p className="text-capitalize">{diff}</p>
+                            <p className="text-capitalize m-0">{diff}</p>
                         </div>
                         <div className="col-4">
-                            <p className="text-end">{calculatePartyXP(playerData)[diff]}</p>
+                            <p className="text-end m-0">{calculatePartyXP(playerData)[diff]}</p>
                         </div>
                     </div>)
                 }
@@ -53,8 +54,7 @@ export default function PlayersManager() {
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+    </>
 }
 
 function LevelGroup({index}:{index: number}) {

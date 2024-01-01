@@ -4,9 +4,23 @@
 
 #graph-column > div {
   display: inline;
-  position: absolute
+  position: absolute;
+  padding: 0 !important;
 }
 
 #graph-column > div > div {
   display:inline-block;
+}
+
+div#root {
+  height:100vh;
+  width:100vw;
+}
+
+div#borderRow {
+  height: calc(100% - 2px)
+}
+
+body {
+  overflow-x: hidden
 }

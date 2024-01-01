@@ -31,8 +31,9 @@ function App() {
     }, [])
 
 
-    return <>
-          <div className="container-xxl">
+    return  <PlayerContext.Provider value={playerState}>
+        <CombatContext.Provider value={combatState}>
+          <div className="container-fluid">
               <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
                   <a href="/5e-encounter-generator"
                      className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
@@ -48,33 +49,31 @@ function App() {
                   </ul>
               </header>
           </div>
-        <PlayerContext.Provider value={playerState}>
-          <div className="container">
-              <div className="row" style={{minHeight: "500px"}}>
-                  <div className="col-5 border">
-                      <PlayersManager/>
-                  </div>
-                  <div className="col border" id="graph-column" style={{position: "relative"}}>
-                      {
-                          graphData ? <Graph graph={graphData}/> : <></>
-                      }
-                  </div>
-              </div>
-          </div>
-        </PlayerContext.Provider>
-        <CombatContext.Provider value={combatState}>
-          <div className="container">
-              <div className="row">
-                      <div className="col-5 border">
-                          <Bestiary/>
-                      </div>
-                      <div className="col border">
-                          <p>Combat</p>
-                      </div>
-              </div>
-          </div>
+            <div className="container-xxl flex-grow-1 mb-3">
+                <div id="borderRow" className="row">
+                    <div className="col-5 border d-flex flex-column">
+                        <div className="row">
+                            <PlayersManager/>
+                            <hr className="my-4"/>
+                        </div>
+                        <div className="row flex-grow-1">
+                            <Bestiary/>
+                        </div>
+                    </div>
+                    <div className="col border">
+                        <div className="row" id="graph-column" style={{minHeight: "500px"}}>
+                            {
+                                graphData ? <Graph graph={graphData}/> : <></>
+                            }
+                        </div>
+                        <div className="row">
+                            <p>Combat</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </CombatContext.Provider>
-  </>
+    </PlayerContext.Provider>
 }
 
 export default App;

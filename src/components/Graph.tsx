@@ -26,7 +26,6 @@ export default function Graph({graph}:GraphProps) {
             const {width, height} = col.getBoundingClientRect()
             const dims = {width: width - 2, height: height - 2}
             setDimensions(dims)
-            console.log(dims)
         }
     }
 
