@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import logo from './logo.svg';
 import './App.css';
 import PlayersManager from "./components/PlayersManager";
-import {PlayerData} from "./types";
+import {Monster, PlayerData} from "./types";
 import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
@@ -11,13 +11,16 @@ import Graph from "./components/Graph";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Bestiary from "./components/Bestiary";
 import {varUrl} from "./helpers/misc_helpers";
+import Combat from "./components/Combat";
+import Papa from "papaparse";
 
 function App() {
 
     const playerState = useState<PlayerData[]>([{level:undefined, num:undefined}])
-    const combatState = useState<string[]>([])
+    const combatState = useState<{[key:string]:number}>({})
 
     const [ graphData, setGraphData ] = useState(undefined)
+    const [bestiaryData, setBestiaryData] = useState<Monster[]|undefined>(undefined)
 
     useEffect(() => {
         const getGraph = async() => {
@@ -25,8 +28,21 @@ function App() {
             return await graph_data.json()
         }
 
+        const getBestiary = async () => {
+            const bestiary = await fetch(varUrl('data/bestiary.csv'))
+            return bestiary.text();
+        }
+
         getGraph().then(graph => {
             setGraphData(graph)
+        })
+
+        getBestiary().then(bestiary => {
+            console.log("BESTIARY")
+            const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
+            console.log(bestiary_obj)
+            const sortedBestiary = (bestiary_obj as Monster[]).slice(0, -1).sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
+            setBestiaryData(sortedBestiary)
         })
     }, [])
 
@@ -57,17 +73,17 @@ function App() {
                             <hr className="my-4"/>
                         </div>
                         <div className="row flex-grow-1">
-                            <Bestiary/>
+                            {bestiaryData ? <Bestiary bestiary={bestiaryData}/> : <></>}
                         </div>
                     </div>
-                    <div className="col border">
+                    <div className="col border d-flex flex-column">
                         <div className="row" id="graph-column" style={{minHeight: "500px"}}>
                             {
                                 graphData ? <Graph graph={graphData}/> : <></>
                             }
                         </div>
-                        <div className="row">
-                            <p>Combat</p>
+                        <div className="row flex-grow-1">
+                            {bestiaryData && graphData ? <Combat bestiary={bestiaryData} graph={graphData}/> :  <></>}
                         </div>
                     </div>
                 </div>

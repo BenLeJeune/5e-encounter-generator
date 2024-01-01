@@ -10,8 +10,8 @@ export type valid_level = 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|und
 export type Difficulty = "easy" | "medium" | "hard" | "deadly"
 
 
-export type Node = {name:number, id:number}
-export type Link = {source:number, target:number}
+export type Node = {id:string}
+export type Link = {source:Node, target:Node}
 
 
 export type Monster_Type = "aberration" | "beast" | "celestial" | "construct" | "dragon" |

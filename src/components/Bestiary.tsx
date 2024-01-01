@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect, useLayoutEffect, useState} from 'react';
+import React, {ReactElement, useContext, useEffect, useLayoutEffect, useState} from 'react';
 import Papa from "papaparse";
 import {Monster} from "../types";
 import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
@@ -6,18 +6,21 @@ import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterTy
 import {PlusCircle} from "iconoir-react";
 import {varUrl} from "../helpers/misc_helpers";
 import {count} from "d3";
+import {CombatContext} from "../context/CombatContext";
 
-type Bestiary_Props = {}
+type Bestiary_Props = {
+    bestiary: Monster[]
+}
 
-export default function Bestiary(props: Bestiary_Props) {
+export default function Bestiary({bestiary}: Bestiary_Props) {
 
-    const [bestiary, setBestiary] = useState<Monster[]>()
+    //const [bestiary, setBestiary] = useState<Monster[]>()
 
     const [searchTerm, setSearchTerm] = useState<string>('')
 
     const [numButtons, setNumButtons] = useState<number>(1)
     const [currentPage, setCurrentPage] = useState<number>(1)
-    const [numResults, setNumResults] = useState<number>(1)
+    const [numResults, setNumResults] = useState<number>(() => bestiary.length)
     const [pageLength, setPageLength] = useState<number>(25)
     const [buttonsOffset, setButtonsOffset] = useState<number>(0)
     const handleSearch = (e:React.ChangeEvent<HTMLInputElement>) => {
@@ -30,21 +33,21 @@ export default function Bestiary(props: Bestiary_Props) {
         setSearchTerm(s)
     }
 
-    useEffect(() => {
-        const fetchBestiary = async () => {
-            const bestiary = await fetch(varUrl('data/bestiary.csv'))
-            return bestiary.text();
-        }
-
-        fetchBestiary().then(bestiary => {
-            console.log("BESTIARY")
-            const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
-            console.log(bestiary_obj)
-            const sortedBestiary = (bestiary_obj as Monster[]).slice(0, -1).sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
-            setBestiary(sortedBestiary)
-            setNumResults(sortedBestiary.length)
-        })
-    }, [])
+    // useEffect(() => {
+    //     const fetchBestiary = async () => {
+    //         const bestiary = await fetch(varUrl('data/bestiary.csv'))
+    //         return bestiary.text();
+    //     }
+    //
+    //     fetchBestiary().then(bestiary => {
+    //         console.log("BESTIARY")
+    //         const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
+    //         console.log(bestiary_obj)
+    //         const sortedBestiary = (bestiary_obj as Monster[]).slice(0, -1).sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
+    //         setBestiary(sortedBestiary)
+    //         setNumResults(sortedBestiary.length)
+    //     })
+    // }, [])
 
     useLayoutEffect(() => {
         window.addEventListener('resize', calculatePageLinksNum)
@@ -152,7 +155,22 @@ type BestiaryRowProps = {
     monster: Monster
 }
 
-function BestiaryRow({monster}:BestiaryRowProps) {
+export function BestiaryRow({monster}:BestiaryRowProps) {
+
+    const setCombat = useContext(CombatContext)[1]
+
+    const handleClick = () => {
+        const m = monster.monster_name
+        setCombat(combat => {
+            let prev_amount = 0
+            if (m in combat) prev_amount = combat[m]
+            return {
+                ...combat,
+                [m]: prev_amount + 1
+            }
+        })
+    }
+
     return <div className="row mt-2">
         <div className="col">
             <h6 className="text-capitalize">
@@ -170,7 +188,7 @@ function BestiaryRow({monster}:BestiaryRowProps) {
             </p>
         </div>
         <div className="col-2 justify-content-end align-items-center d-flex">
-            <button type="button" className="btn btn-primary">
+            <button type="button" onClick={handleClick} className="btn btn-primary">
                 Add
             </button>
         </div>

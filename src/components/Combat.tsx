@@ -1,0 +1,86 @@
+import React, {useContext} from 'react';
+import {CombatContext} from "../context/CombatContext";
+import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
+import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
+import {Link, Monster, Node} from "../types";
+
+type CombatProps = {
+    bestiary: Monster[],
+    graph: {
+        nodes:Node[],
+        links:Link[]
+    }
+}
+export default function Combat({bestiary, graph}:CombatProps) {
+
+    const monsterLookup = (name: string) => {
+        const matches = bestiary.filter(m => m.monster_name === name)
+        if (matches.length === 0) return null
+        else return matches[0]
+    }
+
+    const [combat, setCombat] = useContext(CombatContext)
+
+    return <div className="container mb-1 d-flex flex-column">
+        <div className="row">
+            <div className="col">
+                <h4>Combat</h4>
+                <hr/>
+            </div>
+            <div className="col">
+                <h6>Dropdown?</h6>
+            </div>
+        </div>
+        <div className="col flex-grow-1 position-relative">
+            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden">
+                {
+                    Object.keys(combat).map(monster => [monster, monsterLookup(monster)] as [string, Monster|null])
+                        .filter(m => m[1] !== null).map(
+                        monster => <CombatRow monster={monster[1] as Monster}/>
+                    )
+                }
+            </div>
+        </div>
+    </div>
+}
+
+type CombatRowProps = {monster:Monster}
+export function CombatRow({monster}:CombatRowProps) {
+
+    const [combat, setCombat] = useContext(CombatContext)
+
+    const handleChange = (i:number) => (e:React.MouseEvent) => {
+        e.preventDefault()
+        let new_count = combat[monster.monster_name] + i
+        if (new_count === 0) setCombat(prevState => {
+            const {[monster.monster_name]: current, ...rest} = prevState
+            return rest
+        })
+        else setCombat(prevState => {return {...prevState, [monster.monster_name]: new_count as number}})
+    }
+
+    return <div className="row mt-2">
+        <div className="col">
+            <h6 className="text-capitalize">
+                {monster.monster_name} ({monster.source})
+                <small className="text-muted" style={{marginLeft: "1em"}}>
+                    CR {parseCr(monster.cr)} · XP {CR_TO_XP[+monster.cr]}
+                </small>
+            </h6>
+            <p className="text-muted text-capitalize mb-0" style={{marginTop: "-.25rem"}}>
+                {
+                    [
+                        getMonsterType(monster), getMonsterTag(monster), getMonsterAlignment(monster), getMonsterEnvironments(monster).join(", ")
+                    ].filter(s => s !== "").join(" · ")
+                }
+            </p>
+        </div>
+        <div className="col-3 justify-content-end align-items-center d-flex">
+            <div className="input-group">
+                <button type="button" onClick={handleChange(-1)} className="btn btn-outline-secondary">-</button>
+                <div className="input-group-text" id="btnGroupAddon">{combat[monster.monster_name]}</div>
+                <button type="button" onClick={handleChange(1)} className="btn btn-outline-secondary">+</button>
+            </div>
+        </div>
+    </div>
+}
