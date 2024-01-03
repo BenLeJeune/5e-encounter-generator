@@ -65,7 +65,6 @@ export default function Bestiary({bestiary}: Bestiary_Props) {
             const { width: navX } = container.getBoundingClientRect()
             const maxX = navX - (3*numX)
             const numButtons =  Math.max(Math.floor(maxX / (numX + 2)), 1)
-            console.log(maxX)
             setNumButtons(numButtons)
         }
     }

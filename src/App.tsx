@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import logo from './logo.svg';
 import './App.css';
 import PlayersManager from "./components/PlayersManager";
-import {Monster, PlayerData} from "./types";
+import {Monster, MonsterData, PlayerData} from "./types";
 import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
@@ -19,8 +19,9 @@ function App() {
     const playerState = useState<PlayerData[]>([{level:undefined, num:undefined}])
     const combatState = useState<{[key:string]:number}>({})
 
-    const [ graphData, setGraphData ] = useState(undefined)
+    const [graphData, setGraphData] = useState(undefined)
     const [bestiaryData, setBestiaryData] = useState<Monster[]|undefined>(undefined)
+    const [monsterStats, setMonsterStats] = useState<MonsterData[]>([])
 
     useEffect(() => {
         const getGraph = async() => {
@@ -33,15 +34,24 @@ function App() {
             return bestiary.text();
         }
 
+        const getMonsterStats = async () => {
+            const monsterStats = await fetch(varUrl('data/monster_data.csv'))
+            return monsterStats.text()
+        }
+
         getGraph().then(graph => {
             setGraphData(graph)
         })
 
         getBestiary().then(bestiary => {
-            console.log("BESTIARY")
             const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
             const sortedBestiary = (bestiary_obj as Monster[]).slice(0, -1).sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
             setBestiaryData(sortedBestiary)
+        })
+
+        getMonsterStats().then(monsterStats => {
+            const monsterStatsObj = Papa.parse(monsterStats, {header:true}).data
+            setMonsterStats((monsterStatsObj as MonsterData[]).slice(0, -1))
         })
     }, [])
 
@@ -82,7 +92,9 @@ function App() {
                             }
                         </div>
                         <div className="row flex-grow-1">
-                            {bestiaryData && graphData ? <Combat bestiary={bestiaryData} graph={graphData}/> :  <></>}
+                            {bestiaryData && graphData ?
+                                <Combat monsterStats={monsterStats} bestiary={bestiaryData} graph={graphData}/>
+                                :  <></>}
                         </div>
                     </div>
                 </div>

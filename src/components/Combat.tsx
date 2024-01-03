@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import {CombatContext} from "../context/CombatContext";
 import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
 import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
-import {Link, Monster, Node} from "../types";
+import {Link, Monster, MonsterData, Node} from "../types";
 import {GenerateRandomEncounter} from "../GenerateEncounter";
 
 type CombatProps = {
@@ -10,9 +10,10 @@ type CombatProps = {
     graph: {
         nodes:Node[],
         links:Link[]
-    }
+    },
+    monsterStats: MonsterData[]
 }
-export default function Combat({bestiary, graph}:CombatProps) {
+export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
 
     const monsterLookup = (name: string) => {
         const matches = bestiary.filter(m => m.monster_name === name)
@@ -24,16 +25,9 @@ export default function Combat({bestiary, graph}:CombatProps) {
     const [numMonsters, setNumMonsters] = useState(3)
 
     const generateEncounter = () => {
-        const encounter = GenerateRandomEncounter(graph, bestiary, Object.keys(combat), numMonsters)
-        setCombat(prev => {
-            const obj = {} as {[mon:string]:number}
-            encounter.forEach(monster => {
-                if (!(monster in combat)) {
-                    obj[monster] = 1
-                }
-            })
-            return {...prev, ...obj}
-        })
+        const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
+            Object.keys(combat), 1000, numMonsters)
+        setCombat(encounter)
     }
 
     const handleNumChange = (e:React.ChangeEvent<HTMLInputElement>) => {

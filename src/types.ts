@@ -9,6 +9,13 @@ export type valid_level = 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|und
 
 export type Difficulty = "easy" | "medium" | "hard" | "deadly"
 
+export type MonsterData = {
+    monster_name:string,
+    fraction:number,
+    count:number,
+    cr:number,
+    xp:number
+}
 
 export type Node = {id:string}
 export type Link = {source:Node, target:Node, weight:number}

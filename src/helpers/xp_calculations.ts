@@ -100,3 +100,35 @@ export const CR_TO_XP = {
     29: 135000,
     30: 155000
 } as {[key:number]:number}
+
+export const calculateEncounterXP = (encounter_counts:{[m:string]:number}, encounter_xps:{[m:string]:number}) => {
+    // Should be of the form (count, xp)
+    const num_monsters = Object.values(encounter_counts).reduce((p, n) => p + n, 0)
+    const total_xp = Object.keys(encounter_xps).reduce((p, mon) => p + (encounter_counts[mon] * encounter_xps[mon]), 0)
+    let multiplier = 1
+    switch(num_monsters) {
+        case 2:
+            multiplier = 1.5; break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            multiplier = 2; break;
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            multiplier = 2.5; break;
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+            multiplier = 3; break;
+        default:
+            multiplier = 4;
+
+    }
+
+    return total_xp * multiplier
+
+}

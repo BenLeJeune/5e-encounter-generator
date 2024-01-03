@@ -5,7 +5,7 @@ import {
     Monster_Tag,
     MONSTER_TAGS,
     Monster_Type,
-    MONSTER_TYPES
+    MONSTER_TYPES, MonsterData
 } from "../types";
 
 export const getMonsterType = (monster:Monster) => {
@@ -45,4 +45,10 @@ export const getMonsterAlignment = (monster:Monster) => {
     if (monster["alignment_G"] === "1") alignment.push("Good")
     else if (monster["alignment_E"] === "1") alignment.push("Evil")
     return alignment.join(" ")
+}
+
+export const monsterLookup = <T extends {monster_name:string}>(name:string, bestiary:T[]) => {
+    const matches = bestiary.filter(m => m.monster_name === name)
+    if (matches.length === 0) return null
+    else return matches[0]
 }
