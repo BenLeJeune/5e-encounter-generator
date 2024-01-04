@@ -1,9 +1,10 @@
 import React, {useContext, useState} from 'react';
 import {CombatContext} from "../context/CombatContext";
-import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
+import {calculateEncounterXP, calculatePartyXP, CR_TO_XP, parseCr} from "../helpers/xp_calculations";
 import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
-import {Link, Monster, MonsterData, Node} from "../types";
+import {Difficulty, Link, Monster, MonsterData, Node} from "../types";
 import {GenerateRandomEncounter} from "../GenerateEncounter";
+import {PlayerContext} from "../context/PlayerContext";
 
 type CombatProps = {
     bestiary: Monster[],
@@ -24,9 +25,12 @@ export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
     const [combat, setCombat] = useContext(CombatContext)
     const [numMonsters, setNumMonsters] = useState(3)
 
+    const players = useContext(PlayerContext)[0]
+    const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('hard')
+
     const generateEncounter = () => {
         const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
-            Object.keys(combat), 1000, numMonsters)
+            Object.keys(combat), calculatePartyXP(players)[selectedDifficulty], numMonsters)
         setCombat(encounter)
     }
 
@@ -60,6 +64,23 @@ export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
             </div>
         </div>
         <div className="row">
+            <div className="col">
+                <h6>
+                    Total: {calculateEncounterXP(
+                    combat,
+                    Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Monster]).reduce(
+                        (p, n) => {
+                            return {
+                                ...p,
+                                [n[0]]: CR_TO_XP[+n[1].cr]
+                            }
+                        }, {}
+                    )
+                )} XP
+                </h6>
+            </div>
+        </div>
+        <div className="row">
             <div className="col-auto">
                 <button onClick={generateEncounter} className="btn btn-outline-primary btn-lg">
                     Generate Encounter
@@ -67,7 +88,10 @@ export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
             </div>
             <div className="col d-flex flex-column justify-content-center">
                 <div className="input-group">
-                    <select className="form-select">
+                    <select className="form-select"
+                            value={selectedDifficulty}
+                            onChange={e => {setSelectedDifficulty(e.target.value as Difficulty)}}
+                    >
                         <option value="easy">Easy</option>
                         <option value="medium">Medium</option>
                         <option selected value="hard">Hard</option>

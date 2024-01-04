@@ -8,6 +8,16 @@ export const GenerateRandomEncounter =
     (graph: {nodes: Node[], links: Link[]}, bestiary: Monster[], monsterStats:MonsterData[], monsters: string[], xp_lim:number, num:number, gamma:number=0.3) =>
     {
         const nodes = monsters
+        // We store the XPs of the monsters to track how much XP is in the combat already
+        // - we don't want to add a monster with XP greater than the total limit
+        // todo: considerations for when there are no valid monsters (or xp lim of 0?)
+        const node_xp_lookups = nodes.reduce((p, n) => {
+            const mon_dat = monsterLookup(n, bestiary)
+            return {
+                ...p,
+                [n]: mon_dat ? CR_TO_XP[+mon_dat.cr] : 0
+            }
+        }, {} as {[key:string]:number})
         if (nodes.length === 0) {
             const all_nodes_weighted = graph.nodes.reduce((prev, node) => {
                 return {
@@ -27,6 +37,7 @@ export const GenerateRandomEncounter =
                 const current_node = nodes[j]
                 // we iterate over every neighbor
                 const neighbors = graph.links.reduce((prev, link) => {
+                    /// neighbors is of the form [node, weight]
                     if (link.source.id === current_node) return [...prev,
                         [link.target.id, link.weight] as [string, number]]
                     else if (link.target.id === current_node) return [...prev,
@@ -34,7 +45,33 @@ export const GenerateRandomEncounter =
                     else return prev
                 }, [] as [string, number][]).filter(neighbor => nodes.indexOf(neighbor[0]) === -1)
 
-                neighbors.forEach(neighbor => {
+                // we do not consider any neighbors that would push us over the XP limitation
+                console.log("Neighbors before filtering: ")
+                console.log(neighbors)
+                neighbors.filter(neighbor => {
+                    const neighbor_data = monsterLookup(neighbor[0], bestiary)
+                    if (neighbor_data !== null) {
+                        const new_xp = calculateEncounterXP(
+                            {
+                                ...nodes.reduce((p, n) => {
+                                    return {...p, [n]: 1}
+                                }, {} as { [key: string]: number }),
+                                [neighbor[0]]: 1
+                            },
+                            {
+                                ...node_xp_lookups,
+                                [neighbor[0]]: CR_TO_XP[+neighbor_data.cr]
+                            }
+                        )
+                        console.log(`Adding ${neighbor[0]} brings XP total to ${new_xp}`)
+                        return new_xp < xp_lim
+                    }
+                    // This means we won't generate any creatures not
+                    // in the bestiary... which makes sense.
+                    console.log(neighbor_data)
+                    return false
+                })
+                    .forEach(neighbor => {
                     // We total the weights - setting all weights to 1 for now
                     const [neighborId, weight] = neighbor
                     if (neighborId in weights) weights[neighborId] += weight * discount
@@ -42,9 +79,13 @@ export const GenerateRandomEncounter =
                 })
             }
             // We now have our options and their weights
+            console.log(weights)
+            if (Object.keys(weights).length === 0) break
             const choice = weightedRandomChoice(weights) as string
             console.log(`Pushing ${choice}`)
             nodes.push(choice)
+            const node_lookup = monsterLookup(choice, bestiary)
+            node_xp_lookups[choice] = node_lookup ? CR_TO_XP[+node_lookup.cr] : 0
         }
 
         // - ========: PREDICTING COMBAT COUNTS :======== -
@@ -67,6 +108,7 @@ export const GenerateRandomEncounter =
         // we are now ready to compute
         const monster_counts = {} as {[key:string]:number}
         const monster_xps = {} as {[key:string]:number}
+        // BELOW: populates the monster_counts and monster_xps objects
         chosen_monsters.map((monster, i) => {
             if (typeof monster === 'string') {
                 // If for some reason we fail to read the monster, we let there be 1.
@@ -111,8 +153,40 @@ export const GenerateRandomEncounter =
         // If we have exceeded the XP limit by too much, then we want to
         // remove monsters until we are back within the limit again
 
-        const current_xp = calculateEncounterXP(monster_counts, monster_xps)
+        let current_xp = calculateEncounterXP(monster_counts, monster_xps)
         console.log(`Current XP: ${current_xp}`)
+
+        const combat_size = Object.keys(monster_counts).length
+        const monster_predicted_fracs = Object.keys(monster_counts).reduce((p, n) => {
+            return {
+                ...p, [n]: monster_counts[n] / combat_size
+            }
+        }, {}) as {[key:string]:number}
+
+        if (current_xp > xp_lim + combat_min_xp) {
+            // While there are creatures to remove, and we still want to remove them
+            let mons_to_remove = Object.keys(monster_counts).filter(m => monster_counts[m] > 1)
+            let weights_to_remove = mons_to_remove.reduce((prev, mon) => {
+                if (mons_to_remove.indexOf(mon) !== -1) return {...prev, [mon]: monster_predicted_fracs[mon]}
+                else return prev
+            }, {})
+            console.log("Removing monsters")
+            console.log(mons_to_remove)
+            console.log(weights_to_remove)
+            while (current_xp > xp_lim + combat_min_xp && mons_to_remove.length > 0) {
+                const selection = weightedRandomChoice(weights_to_remove) as string
+                monster_counts[selection] -= 1
+                current_xp = calculateEncounterXP(monster_counts, monster_xps)
+                console.log(`Removed a ${selection}, xp is now ${current_xp}`)
+                /// Refreshing which monsters we want to include
+                mons_to_remove = Object.keys(monster_counts).filter(m => monster_counts[m] > 1)
+                weights_to_remove = mons_to_remove.reduce((prev, mon) => {
+                    if (mons_to_remove.indexOf(mon) !== -1) return {...prev, [mon]: monster_predicted_fracs[mon]}
+                    else return prev
+                }, {})
+            }
+
+        }
 
 
 
