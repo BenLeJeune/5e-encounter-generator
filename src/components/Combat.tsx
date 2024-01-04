@@ -109,8 +109,8 @@ export default function Combat({bestiary, graph, monsterStats, graphNodes}:Comba
                     <input className="form-control" type="number" value={numMonsters} onChange={handleNumChange}/>
                     <select className="form-select">
                         <option selected value="random">Random</option>
-                        <option value="boss_minions">Boss & Minions</option>
-                        <option value="2_monsters">2 Monsters</option>
+                        {/*<option value="boss_minions">Boss & Minions</option>*/}
+                        {/*<option value="2_monsters">2 Monsters</option>*/}
                     </select>
                 </div>
             </div>
