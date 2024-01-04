@@ -48,11 +48,6 @@ div.mobileOnly {
     min-height: 80vw !important;
     margin-top: .5rem
   }
-  div#generateEncounterButton {
-    div.leftbtn {
-      margin-right: auto
-    }
-  }
   div.encounterButtons {
     margin-bottom: .5rem;
   }
