@@ -7,7 +7,7 @@ import {Simulate} from "react-dom/test-utils";
 import copy = Simulate.copy;
 
 export const GenerateRandomEncounter =
-    (graph: {nodes: Node[], links: Link[]}, bestiary: Monster[], monsterStats:MonsterData[], monsters: string[], xp_lim:number, num:number, gamma:number=0.3) =>
+    (graph: {nodes: Node[], links: Link[]}, bestiary: Monster[], monsterStats:MonsterData[], monsters: string[], xp_lim:number, num:number, gamma:number=0.3, verbose=false) =>
     {
 
         // - ========: CHOOSING THE MONSTERS :======== -
@@ -15,19 +15,6 @@ export const GenerateRandomEncounter =
 
         const nodes = monsters
 
-        // these are the types, environments, and tags in the encounter
-        const encounter_types = [] as string[]
-        const encounter_tags = [] as string[]
-        const encounter_environments = [] as string[]
-
-        nodes.forEach(node => {
-            const monster = monsterLookup(node, bestiary)
-            if (monster !== null) {
-                encounter_types.push(getMonsterType(monster))
-                encounter_environments.push(...getMonsterEnvironments(monster))
-                encounter_tags.push(...getMonsterTag(monster))
-            }
-        })
         // We store the XPs of the monsters to track how much XP is in the combat already
         // - we don't want to add a monster with XP greater than the total limit
         // todo: considerations for when there are no valid monsters (or xp lim of 0?)
@@ -39,14 +26,19 @@ export const GenerateRandomEncounter =
             }
         }, {} as {[key:string]:number})
         if (nodes.length === 0) {
-            const all_nodes_weighted = graph.nodes.reduce((prev, node) => {
+            const all_nodes_weighted = graph.nodes
+                .filter(node => {
+                    const mon = monsterLookup(node.id, bestiary)
+                    return mon !== null && CR_TO_XP[+(mon as Monster).cr] <= xp_lim
+                })
+                .reduce((prev, node) => {
                 return {
                     ...prev, [node.id]: 1
                 }
             }, {})
             nodes.push(weightedRandomChoice(all_nodes_weighted) as string)
         }
-        console.log(nodes)
+        if (verbose) console.log(nodes)
         const starting_len = nodes.length
         // For each monster we want to add
         for (let i = 0; i < num - starting_len; i++) {
@@ -67,8 +59,10 @@ export const GenerateRandomEncounter =
                 }, [] as [string, number][]).filter(neighbor => nodes.indexOf(neighbor[0]) === -1)
 
                 // we do not consider any neighbors that would push us over the XP limitation
-                console.log("Neighbors before filtering: ")
-                console.log(neighbors)
+                if (verbose) {
+                    console.log("Neighbors before filtering: ")
+                    console.log(neighbors)
+                }
                 neighbors.filter(neighbor => {
                     const neighbor_data = monsterLookup(neighbor[0], bestiary)
                     if (neighbor_data !== null) {
@@ -84,12 +78,12 @@ export const GenerateRandomEncounter =
                                 [neighbor[0]]: CR_TO_XP[+neighbor_data.cr]
                             }
                         )
-                        console.log(`Adding ${neighbor[0]} brings XP total to ${new_xp}`)
+                        if (verbose) console.log(`Adding ${neighbor[0]} brings XP total to ${new_xp}`)
                         return new_xp < xp_lim
                     }
                     // This means we won't generate any creatures not
                     // in the bestiary... which makes sense.
-                    console.log(neighbor_data)
+                    if (verbose) console.log(neighbor_data)
                     return false
                 })
                     .forEach(neighbor => {
@@ -100,21 +94,16 @@ export const GenerateRandomEncounter =
                 })
             }
             // We now have our options and their weights
-            console.log(weights)
+            if (verbose) console.log(weights)
             if (Object.keys(weights).length === 0) {
                 break;
             }
             else {
                 const choice = weightedRandomChoice(weights) as string
-                console.log(`Pushing ${choice}`)
+                if (verbose) console.log(`Pushing ${choice}`)
                 nodes.push(choice)
                 const node_lookup = monsterLookup(choice, bestiary)
                 node_xp_lookups[choice] = node_lookup ? CR_TO_XP[+node_lookup.cr] : 0
-                if (node_lookup !== null) {
-                    encounter_types.push(getMonsterType(node_lookup))
-                    encounter_tags.push(...getMonsterTag(node_lookup))
-                    encounter_environments.push(...getMonsterEnvironments(node_lookup))
-                }
             }
         }
 
@@ -184,7 +173,7 @@ export const GenerateRandomEncounter =
         // remove monsters until we are back within the limit again
 
         let current_xp = calculateEncounterXP(monster_counts, monster_xps)
-        console.log(`Current XP: ${current_xp}`)
+        if (verbose) console.log(`Current XP: ${current_xp}`)
 
         const combat_size = Object.keys(monster_counts).length
         const monster_predicted_fracs = Object.keys(monster_counts).reduce((p, n) => {
@@ -200,14 +189,16 @@ export const GenerateRandomEncounter =
                 if (mons_to_remove.indexOf(mon) !== -1) return {...prev, [mon]: monster_predicted_fracs[mon]}
                 else return prev
             }, {})
-            console.log("Removing monsters")
-            console.log(mons_to_remove)
-            console.log(weights_to_remove)
+            if (verbose) {
+                console.log("Removing monsters")
+                console.log(mons_to_remove)
+                console.log(weights_to_remove)
+            }
             while (current_xp > xp_lim + combat_min_xp && mons_to_remove.length > 0) {
                 const selection = weightedRandomChoice(weights_to_remove) as string
                 monster_counts[selection] -= 1
                 current_xp = calculateEncounterXP(monster_counts, monster_xps)
-                console.log(`Removed a ${selection}, xp is now ${current_xp}`)
+                if (verbose) console.log(`Removed a ${selection}, xp is now ${current_xp}`)
                 /// Refreshing which monsters we want to include
                 mons_to_remove = Object.keys(monster_counts).filter(m => monster_counts[m] > 1)
                 weights_to_remove = mons_to_remove.reduce((prev, mon) => {
@@ -239,12 +230,12 @@ export const GenerateRandomEncounter =
                 const next_xp = calculateEncounterXP(test_encounter, monster_xps)
                 if (next_xp <= xp_lim) {
                     current_xp = next_xp
-                    console.log(`Added ${selection}, XP: ${current_xp}`)
+                    if (verbose) console.log(`Added ${selection}, XP: ${current_xp}`)
                     monster_counts[selection] += 1
                 }
                 else {
                     mons_full.push(selection)
-                    console.log(`Tried adding ${selection} but brought XP to ${current_xp}`)
+                    if (verbose) console.log(`Tried adding ${selection} but brought XP to ${current_xp}`)
                 }
                 mons_to_add = Object.keys(monster_counts).filter(m => mons_full.indexOf(m) === -1)
                 weights_to_add = mons_to_add.reduce((prev, mon) => {

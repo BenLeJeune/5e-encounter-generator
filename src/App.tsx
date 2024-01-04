@@ -68,15 +68,15 @@ function App() {
               <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
                   <a href="/5e-encounter-generator"
                      className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                      <img src={GraphLogo} alt="EnGen logo" style={{height: "3.5rem"}} className="mx-2"/>
+                      <img src={GraphLogo} alt="EnGen logo" style={{height: "3rem"}} className="mx-2"/>
                       <span className="fs-4 fw-bold">EnGen</span>
                   </a>
                   <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                       <li>
-                          <a href="/5e-encounter-generator" className="nav-link px-2 link-secondary">Encounter Builder</a>
+                          <a href="/5e-encounter-generator" className="nav-link px-2">Encounter Builder</a>
                       </li>
                       <li>
-                          <a href="/" className="nav-link px-2">About Me</a>
+                          <a href="/" className="nav-link px-2 link-secondary">About Me</a>
                       </li>
                   </ul>
               </header>

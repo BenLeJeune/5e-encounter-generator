@@ -65,7 +65,7 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
             if ( next_max_pages < currentPage) {
                 setCurrentPage( Math.max(next_max_pages, 1) )
             }
-            setButtonsOffset(prev => Math.min(prev, next_max_pages - 1))
+            setButtonsOffset(prev => Math.max(Math.min(prev, next_max_pages - 1), 0))
         }
         setSearchTerm(s)
     }
@@ -179,7 +179,7 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
         </div>
 
         <nav aria-label="Bestiary search" className="d-flex justify-content-center mx-2" id="bestiaryPagination">
-            <ul className="pagination d-flex flex-row w-100">
+            <ul className="pagination d-flex flex-row w-100 my-0">
                 <li className="page-item align-middle flex-grow-1" id="prevPageButton">
                     <a className={`page-link text-center ${buttonsOffset === 0 ? 'disabled' : ''}`}
                        href="#" onClick={e => incrementButtons(e, -1)} aria-label="Previous">
