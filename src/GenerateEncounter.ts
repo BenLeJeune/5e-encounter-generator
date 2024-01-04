@@ -1,6 +1,6 @@
 import {Node, Link, Monster, MonsterData} from "./types";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
-import {monsterLookup} from "./helpers/monster_parsers";
+import {getMonsterEnvironments, getMonsterTag, getMonsterType, monsterLookup} from "./helpers/monster_parsers";
 import {calculateEncounterXP, CR_TO_XP} from "./helpers/xp_calculations";
 import {score as PredictCount} from "./models/CountPredictionModel"
 import {Simulate} from "react-dom/test-utils";
@@ -9,7 +9,25 @@ import copy = Simulate.copy;
 export const GenerateRandomEncounter =
     (graph: {nodes: Node[], links: Link[]}, bestiary: Monster[], monsterStats:MonsterData[], monsters: string[], xp_lim:number, num:number, gamma:number=0.3) =>
     {
+
+        // - ========: CHOOSING THE MONSTERS :======== -
+        // This is the part where we select monsters
+
         const nodes = monsters
+
+        // these are the types, environments, and tags in the encounter
+        const encounter_types = [] as string[]
+        const encounter_tags = [] as string[]
+        const encounter_environments = [] as string[]
+
+        nodes.forEach(node => {
+            const monster = monsterLookup(node, bestiary)
+            if (monster !== null) {
+                encounter_types.push(getMonsterType(monster))
+                encounter_environments.push(...getMonsterEnvironments(monster))
+                encounter_tags.push(...getMonsterTag(monster))
+            }
+        })
         // We store the XPs of the monsters to track how much XP is in the combat already
         // - we don't want to add a monster with XP greater than the total limit
         // todo: considerations for when there are no valid monsters (or xp lim of 0?)
@@ -32,6 +50,7 @@ export const GenerateRandomEncounter =
         const starting_len = nodes.length
         // For each monster we want to add
         for (let i = 0; i < num - starting_len; i++) {
+
             let weights = {} as {[key:string]:number}
             // For each of our current nodes, we add the weights of nodes adjacent to that node
             for (let j = 0; j < nodes.length; j++) {
@@ -82,12 +101,21 @@ export const GenerateRandomEncounter =
             }
             // We now have our options and their weights
             console.log(weights)
-            if (Object.keys(weights).length === 0) break
-            const choice = weightedRandomChoice(weights) as string
-            console.log(`Pushing ${choice}`)
-            nodes.push(choice)
-            const node_lookup = monsterLookup(choice, bestiary)
-            node_xp_lookups[choice] = node_lookup ? CR_TO_XP[+node_lookup.cr] : 0
+            if (Object.keys(weights).length === 0) {
+                break;
+            }
+            else {
+                const choice = weightedRandomChoice(weights) as string
+                console.log(`Pushing ${choice}`)
+                nodes.push(choice)
+                const node_lookup = monsterLookup(choice, bestiary)
+                node_xp_lookups[choice] = node_lookup ? CR_TO_XP[+node_lookup.cr] : 0
+                if (node_lookup !== null) {
+                    encounter_types.push(getMonsterType(node_lookup))
+                    encounter_tags.push(...getMonsterTag(node_lookup))
+                    encounter_environments.push(...getMonsterEnvironments(node_lookup))
+                }
+            }
         }
 
         // - ========: PREDICTING COMBAT COUNTS :======== -

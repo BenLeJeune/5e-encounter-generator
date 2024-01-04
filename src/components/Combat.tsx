@@ -1,10 +1,17 @@
 import React, {useContext, useState} from 'react';
 import {CombatContext} from "../context/CombatContext";
 import {calculateEncounterXP, calculatePartyXP, CR_TO_XP, parseCr} from "../helpers/xp_calculations";
-import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
+import {
+    getMonsterAlignment,
+    getMonsterEnvironments,
+    getMonsterTag,
+    getMonsterType,
+    getTypeAndTag
+} from "../helpers/monster_parsers";
 import {Difficulty, Link, Monster, MonsterData, Node} from "../types";
 import {GenerateRandomEncounter} from "../GenerateEncounter";
 import {PlayerContext} from "../context/PlayerContext";
+import { } from "iconoir-react"
 
 type CombatProps = {
     bestiary: Monster[],
@@ -12,9 +19,10 @@ type CombatProps = {
         nodes:Node[],
         links:Link[]
     },
-    monsterStats: MonsterData[]
+    monsterStats: MonsterData[],
+    graphNodes:string[]
 }
-export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
+export default function Combat({bestiary, graph, monsterStats, graphNodes}:CombatProps) {
 
     const monsterLookup = (name: string) => {
         const matches = bestiary.filter(m => m.monster_name === name)
@@ -49,16 +57,17 @@ export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
                 <h4>Combat</h4>
                 <hr/>
             </div>
-            <div className="col">
-                <button className="btn btn-outline-secondary">Advanced</button>
-            </div>
+            {/*<div className="col-auto d-flex flex-column justify-content-center">*/}
+            {/*    <button className="btn btn-outline-secondary">Coming Soon</button>*/}
+            {/*</div>*/}
         </div>
         <div className="col flex-grow-1 position-relative">
             <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden px-2">
                 {
                     Object.keys(combat).map(monster => [monster, monsterLookup(monster)] as [string, Monster|null])
                         .filter(m => m[1] !== null).map(
-                        monster => <CombatRow monster={monster[1] as Monster}/>
+                        monster => <CombatRow monster={monster[1] as Monster}
+                                        in_graph={graphNodes.indexOf(monster[0]) !== -1}/>
                     )
                 }
             </div>
@@ -115,8 +124,8 @@ export default function Combat({bestiary, graph, monsterStats}:CombatProps) {
     </div>
 }
 
-type CombatRowProps = {monster:Monster}
-export function CombatRow({monster}:CombatRowProps) {
+type CombatRowProps = {monster:Monster, in_graph:boolean}
+export function CombatRow({monster, in_graph}:CombatRowProps) {
 
     const [combat, setCombat] = useContext(CombatContext)
 
@@ -136,12 +145,13 @@ export function CombatRow({monster}:CombatRowProps) {
                 {monster.monster_name} ({monster.source})
                 <small className="text-muted" style={{marginLeft: "1em"}}>
                     CR {parseCr(monster.cr)} · XP {CR_TO_XP[+monster.cr]}
+                    { in_graph ? null : <span className="text-warning"> · Not in graph</span>}
                 </small>
             </h6>
             <p className="text-muted text-capitalize mb-0" style={{marginTop: "-.25rem"}}>
                 {
                     [
-                        getMonsterType(monster), getMonsterTag(monster), getMonsterAlignment(monster), getMonsterEnvironments(monster).join(", ")
+                        getTypeAndTag(monster), getMonsterAlignment(monster), getMonsterEnvironments(monster).join(", ")
                     ].filter(s => s !== "").join(" · ")
                 }
             </p>

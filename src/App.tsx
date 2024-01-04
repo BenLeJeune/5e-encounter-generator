@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import logo from './logo.svg';
 import './App.css';
 import PlayersManager from "./components/PlayersManager";
-import {Monster, MonsterData, PlayerData} from "./types";
+import {Monster, MonsterData, Node, PlayerData} from "./types";
 import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
+import GraphLogo from './svg/GraphLogo.svg'
 
 // Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -22,6 +22,8 @@ function App() {
     const [graphData, setGraphData] = useState(undefined)
     const [bestiaryData, setBestiaryData] = useState<Monster[]|undefined>(undefined)
     const [monsterStats, setMonsterStats] = useState<MonsterData[]>([])
+
+    const [graphNodes, setGraphNodes] = useState<string[]>([])
 
     useEffect(() => {
         const getGraph = async() => {
@@ -41,11 +43,15 @@ function App() {
 
         getGraph().then(graph => {
             setGraphData(graph)
+            setGraphNodes((graph.nodes as {id:string}[]).map(n => n.id))
         })
 
         getBestiary().then(bestiary => {
             const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
-            const sortedBestiary = (bestiary_obj as Monster[]).slice(0, -1).sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
+            const sortedBestiary = (bestiary_obj as Monster[])
+                .slice(0, -1)
+                .filter(m => m.reprinted === "False")
+                .sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
             setBestiaryData(sortedBestiary)
         })
 
@@ -62,6 +68,7 @@ function App() {
               <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
                   <a href="/5e-encounter-generator"
                      className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+                      <img src={GraphLogo} alt="EnGen logo" style={{height: "3.5rem"}} className="mx-2"/>
                       <span className="fs-4 fw-bold">EnGen</span>
                   </a>
                   <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
@@ -76,16 +83,16 @@ function App() {
           </div>
             <div className="container-xxl flex-grow-1 mb-3">
                 <div id="borderRow" className="row">
-                    <div className="col-5 border d-flex flex-column">
+                    <div className="col-5 d-flex flex-column">
                         <div className="row">
                             <PlayersManager/>
                             <hr className="my-4"/>
                         </div>
                         <div className="row flex-grow-1">
-                            {bestiaryData ? <Bestiary bestiary={bestiaryData}/> : <></>}
+                            {bestiaryData ? <Bestiary bestiary={bestiaryData} graphNodes={graphNodes}/> : <></>}
                         </div>
                     </div>
-                    <div className="col border d-flex flex-column">
+                    <div className="col d-flex flex-column">
                         <div className="row" id="graph-column" style={{minHeight: "500px"}}>
                             {
                                 graphData ? <Graph graph={graphData}/> : <></>
@@ -93,7 +100,7 @@ function App() {
                         </div>
                         <div className="row flex-grow-1">
                             {bestiaryData && graphData ?
-                                <Combat monsterStats={monsterStats} bestiary={bestiaryData} graph={graphData}/>
+                                <Combat graphNodes={graphNodes} monsterStats={monsterStats} bestiary={bestiaryData} graph={graphData}/>
                                 :  <></>}
                         </div>
                     </div>
@@ -101,6 +108,7 @@ function App() {
             </div>
         </CombatContext.Provider>
     </PlayerContext.Provider>
+
 }
 
 export default App;

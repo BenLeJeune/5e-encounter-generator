@@ -107,6 +107,8 @@ export const calculateEncounterXP = (encounter_counts:{[m:string]:number}, encou
     const total_xp = Object.keys(encounter_xps).reduce((p, mon) => p + (encounter_counts[mon] * encounter_xps[mon]), 0)
     let multiplier = 1
     switch(num_monsters) {
+        case 1:
+            break;
         case 2:
             multiplier = 1.5; break;
         case 3:
@@ -128,7 +130,6 @@ export const calculateEncounterXP = (encounter_counts:{[m:string]:number}, encou
             multiplier = 4;
 
     }
-
     return total_xp * multiplier
 
 }

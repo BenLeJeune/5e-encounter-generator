@@ -16,7 +16,7 @@ export const getMonsterType = (monster:Monster) => {
     })
     if (matches.length > 0) {
         return matches[0]
-    } else return ""
+    } else return "humanoid"
 }
 
 export const getMonsterTag = (monster:Monster) => {
@@ -25,8 +25,8 @@ export const getMonsterTag = (monster:Monster) => {
         if (monster[`tag_${t}`] === "1") matches.push(t)
     })
     if (matches.length > 0) {
-        return matches[0]
-    } else return ""
+        return matches
+    } else return []
 }
 
 export const getMonsterEnvironments = (monster:Monster) => {
@@ -51,4 +51,11 @@ export const monsterLookup = <T extends {monster_name:string}>(name:string, best
     const matches = bestiary.filter(m => m.monster_name === name)
     if (matches.length === 0) return null
     else return matches[0]
+}
+
+export const getTypeAndTag = (monster:Monster) => {
+    const m_type = getMonsterType(monster)
+    const m_tags = getMonsterTag(monster)
+    if (m_tags.length > 0) return m_type + " (" + m_tags.join(", ") + ")"
+    else return m_type
 }

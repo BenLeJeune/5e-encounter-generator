@@ -22,7 +22,7 @@ export type Link = {source:Node, target:Node, weight:number}
 
 
 export type Monster_Type = "aberration" | "beast" | "celestial" | "construct" | "dragon" |
-    "elemental" | "fey" | "fiend" | "giant" | "monstrosity" | "plant" | "undead"
+    "elemental" | "fey" | "fiend" | "giant" | "monstrosity" | "ooze" |  "plant" | "undead" | 'humanoid'
 type Monster_Type_Key = `type_${Monster_Type}`
 
 export type Monster_Tag = "aarakocra" | "bullywug" | "demon" | "devil" | "dwarf" | "elf" |
@@ -52,10 +52,10 @@ type MonsterTag = {
 }
 
 export type Monster = MonsterAlign & MonsterType & MonsterTag &
-    MonsterEnv & {monster_name: string, cr: string, source: string}
+    MonsterEnv & {monster_name: string, cr: string, source: string, reprinted: "False" | "True"}
 
 export const MONSTER_TYPES = ["aberration" , "beast" , "celestial" , "construct" , "dragon" ,
-    "elemental" , "fey" , "fiend" , "giant" , "monstrosity" , "plant" , "undead"] as Monster_Type[]
+    "elemental" , "fey" , "fiend" , "giant", "humanoid", "monstrosity" , "ooze", "plant" , "undead"] as Monster_Type[]
 
 export const MONSTER_TAGS = ["aarakocra" , "bullywug" , "demon" , "devil" , "dwarf" , "elf" ,
 "gith" , "gnoll" , "gnome" , "goblinoid" , "human" , "kenku" , "kobold" , "kuo-toa" ,
