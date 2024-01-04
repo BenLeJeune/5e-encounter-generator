@@ -3,6 +3,8 @@ import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {monsterLookup} from "./helpers/monster_parsers";
 import {calculateEncounterXP, CR_TO_XP} from "./helpers/xp_calculations";
 import {score as PredictCount} from "./models/CountPredictionModel"
+import {Simulate} from "react-dom/test-utils";
+import copy = Simulate.copy;
 
 export const GenerateRandomEncounter =
     (graph: {nodes: Node[], links: Link[]}, bestiary: Monster[], monsterStats:MonsterData[], monsters: string[], xp_lim:number, num:number, gamma:number=0.3) =>
@@ -116,7 +118,7 @@ export const GenerateRandomEncounter =
                 monster_xps[monster] = 0
                 console.log(`FAILED TO READ MONSTER: ${monster}`)
             }
-            if (chosen_monster_stats[i] === null) {
+            else if  (chosen_monster_stats[i] === null) {
                 // If the monster doesn't have any stats recorded for them
                 // (i.e not a node in the graph - only if the player adds them)
                 const xp = CR_TO_XP[+(monster as Monster).cr]
@@ -132,7 +134,7 @@ export const GenerateRandomEncounter =
                 monster_counts[(monster as Monster).monster_name] = Math.max(Math.round(num_predicted), 1)
                 monster_xps[(monster as Monster).monster_name] = xp
             }
-            if (chosen_monster_stats.length > i) {
+            else if (chosen_monster_stats.length > i) {
                 // The 'normal' case - node in graph is chosen
                 const mon_stats = (chosen_monster_stats[i] as MonsterData)
                 const xp = +mon_stats.xp
@@ -188,6 +190,42 @@ export const GenerateRandomEncounter =
 
         }
 
+        // - ========: (RE-) ADDING MONSTERS :======== -
+        // If we were below the XP limit (or have now fallen too far below it), then
+        // we will try to re-add monsters, not exceeding the limit by too much
+
+        if (current_xp <= xp_lim - combat_min_xp) {
+            // we keep track of which monsters are 'full', i.e cannot be added further
+            const mons_full = [] as string[]
+            let mons_to_add = Object.keys(monster_counts).filter(m => mons_full.indexOf(m) === -1)
+            let weights_to_add = mons_to_add.reduce((prev, mon) => {
+                if (mons_to_add.indexOf(mon) !== -1) return {...prev, [mon]: monster_predicted_fracs[mon]}
+                else return prev
+            }, {})
+            // we repeat as long as there are still monsters that we can add
+            while (mons_to_add.length > 0) {
+                // we make a test encounter, and see what the XP total of this is
+                const selection = weightedRandomChoice(weights_to_add) as string
+                const test_encounter = {...monster_counts}
+                test_encounter[selection] += 1
+                const next_xp = calculateEncounterXP(test_encounter, monster_xps)
+                if (next_xp <= xp_lim) {
+                    current_xp = next_xp
+                    console.log(`Added ${selection}, XP: ${current_xp}`)
+                    monster_counts[selection] += 1
+                }
+                else {
+                    mons_full.push(selection)
+                    console.log(`Tried adding ${selection} but brought XP to ${current_xp}`)
+                }
+                mons_to_add = Object.keys(monster_counts).filter(m => mons_full.indexOf(m) === -1)
+                weights_to_add = mons_to_add.reduce((prev, mon) => {
+                    if (mons_to_add.indexOf(mon) !== -1) return {...prev, [mon]: monster_predicted_fracs[mon]}
+                    else return prev
+                }, {})
+            }
+
+        }
 
 
         return monster_counts
