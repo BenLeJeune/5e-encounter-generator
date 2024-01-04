@@ -83,7 +83,7 @@ function App() {
           </div>
             <div className="container-xxl flex-grow-1 mb-3">
                 <div id="borderRow" className="row">
-                    <div className="col-5 d-flex flex-column">
+                    <div className="col-md-5 d-flex flex-column">
                         <div className="row">
                             <PlayersManager/>
                             <hr className="my-4"/>
@@ -93,7 +93,7 @@ function App() {
                         </div>
                     </div>
                     <div className="col d-flex flex-column">
-                        <div className="row" id="graph-column" style={{minHeight: "500px"}}>
+                        <div className="row" id="graph-column">
                             {
                                 graphData ? <Graph graph={graphData}/> : <></>
                             }

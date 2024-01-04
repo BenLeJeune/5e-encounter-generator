@@ -62,7 +62,7 @@ export default function Combat({bestiary, graph, monsterStats, graphNodes}:Comba
             {/*</div>*/}
         </div>
         <div className="col flex-grow-1 position-relative">
-            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden px-2">
+            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden px-2 responsive-fill-block">
                 {
                     Object.keys(combat).map(monster => [monster, monsterLookup(monster)] as [string, Monster|null])
                         .filter(m => m[1] !== null).map(
@@ -90,12 +90,22 @@ export default function Combat({bestiary, graph, monsterStats, graphNodes}:Comba
             </div>
         </div>
         <div className="row">
-            <div className="col-auto">
-                <button onClick={generateEncounter} className="btn btn-outline-primary btn-lg">
-                    Generate Encounter
-                </button>
+            <div className="row col-md-auto encounterButtons" id="generateEncounterButton">
+                <div className="col-auto">
+                    <button onClick={generateEncounter} className="btn btn-outline-primary btn-lg leftbtn">
+                        Generate Encounter
+                    </button>
+                </div>
+                <div className="col mobileOnly">
+                    <button className="btn btn-lg btn-outline-danger" onClick={clearEncounter}>
+                        Clear
+                    </button>
+                </div>
             </div>
-            <div className="col d-flex flex-column justify-content-center">
+            <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons">
+
+            </div>
+            <div className="col-md d-flex flex-column justify-content-center encounterButtons">
                 <div className="input-group">
                     <select className="form-select"
                             value={selectedDifficulty}
@@ -114,7 +124,7 @@ export default function Combat({bestiary, graph, monsterStats, graphNodes}:Comba
                     </select>
                 </div>
             </div>
-            <div className="col-auto d-flex flex-column justify-content-center">
+            <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons mobileHide">
                 <button className="btn btn-outline-danger" onClick={clearEncounter}>
                     Clear
                 </button>

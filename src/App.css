@@ -1,5 +1,6 @@
 #graph-column {
-  padding: 0
+  padding: 0;
+  min-height: 500px;
 }
 
 #graph-column > div {
@@ -23,4 +24,43 @@ div#borderRow {
 
 body {
   overflow-x: hidden
+}
+
+ /*Medium devices (tablets, 768px and up)*/
+
+div.mobileOnly {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  div.responsive-fill-block {
+    min-height: 100px;
+    max-height: 400px;
+    position: relative !important;
+    overflow-y: auto;
+  }
+  nav#bestiaryPagination {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }
+  div#graph-column {
+    max-height: 100vw !important;
+    min-height: 80vw !important;
+    margin-top: .5rem
+  }
+  div#generateEncounterButton {
+    div.leftbtn {
+      margin-right: auto
+    }
+  }
+  div.encounterButtons {
+    margin-bottom: .5rem;
+  }
+  div.mobileOnly {
+    display: block !important
+  }
+  div.mobileHide {
+    display: none !important
+  }
+
 }

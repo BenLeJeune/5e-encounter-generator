@@ -12,7 +12,7 @@ export const GenerateRandomEncounter =
 
         // - ========: CHOOSING THE MONSTERS :======== -
         // This is the part where we select monsters
-
+        if (xp_lim === 0) xp_lim = Number.POSITIVE_INFINITY
         const nodes = monsters
 
         // We store the XPs of the monsters to track how much XP is in the combat already
@@ -213,7 +213,7 @@ export const GenerateRandomEncounter =
         // If we were below the XP limit (or have now fallen too far below it), then
         // we will try to re-add monsters, not exceeding the limit by too much
 
-        if (current_xp <= xp_lim - combat_min_xp) {
+        if (xp_lim !== Number.POSITIVE_INFINITY && current_xp <= xp_lim - combat_min_xp) {
             // we keep track of which monsters are 'full', i.e cannot be added further
             const mons_full = [] as string[]
             let mons_to_add = Object.keys(monster_counts).filter(m => mons_full.indexOf(m) === -1)

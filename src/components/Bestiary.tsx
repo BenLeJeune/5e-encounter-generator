@@ -171,7 +171,7 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
             </div>
         </div>
         <div className="col flex-grow-1 position-relative">
-            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden">
+            <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden responsive-fill-block">
                 {
                     displayBestiary()
                 }

@@ -10,7 +10,7 @@ export const varUrl = (path:string) => {
     // Wrap the url in a fetch statement with this so it functions in both
     // development (localhost) and production (benlejeune.com)
     const root = window.location.href
-    if (root == "https://benlejeune.com/5e-encounter-generator/") return path
+    if (root === "https://benlejeune.com/5e-encounter-generator/") return path
     else return "5e-encounter-generator/" + path
 }
 
