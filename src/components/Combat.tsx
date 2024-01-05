@@ -92,7 +92,7 @@ export default function Combat({bestiary, graph, monsterStats, graphNodes}:Comba
         <div className="row">
             <div className="row col-md-auto encounterButtons" id="generateEncounterButton">
                 <div className="col-auto">
-                    <button onClick={generateEncounter} className="btn btn-outline-primary btn-lg leftbtn">
+                    <button onClick={generateEncounter} id="generateEncounterButton" className="btn btn-outline-primary btn-lg leftbtn">
                         Generate Encounter
                     </button>
                 </div>
