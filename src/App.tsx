@@ -6,6 +6,7 @@ import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
 import GraphLogo from './svg/GraphLogo.svg'
+import {Modal} from 'bootstrap';
 
 // Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -13,6 +14,7 @@ import Bestiary from "./components/Bestiary";
 import {varUrl} from "./helpers/misc_helpers";
 import Combat from "./components/Combat";
 import Papa from "papaparse";
+import AboutModal from "./components/AboutModal";
 
 function App() {
 
@@ -61,8 +63,19 @@ function App() {
         })
     }, [])
 
+    const showModal = (e:React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        e.preventDefault()
+        const modalEl = document.getElementById("aboutModal")
+        if (modalEl !== null) {
+            const modal = new Modal(modalEl, {})
+            modal.show()
+        }
+    }
 
-    return  <PlayerContext.Provider value={playerState}>
+
+    return  <>
+        <AboutModal/>
+    <PlayerContext.Provider value={playerState}>
         <CombatContext.Provider value={combatState}>
           <div className="container-fluid">
               <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
@@ -73,7 +86,7 @@ function App() {
                   </a>
                   <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                       <li>
-                          <a href="/5e-encounter-generator" className="nav-link px-2">Encounter Builder</a>
+                          <a onClick={e => showModal(e)} style={{cursor:"pointer"}} className="nav-link px-2 link-secondary">About EnGen</a>
                       </li>
                       <li>
                           <a href="/" className="nav-link px-2 link-secondary">About Me</a>
@@ -108,7 +121,7 @@ function App() {
             </div>
         </CombatContext.Provider>
     </PlayerContext.Provider>
-
+    </>
 }
 
 export default App;
