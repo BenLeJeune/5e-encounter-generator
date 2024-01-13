@@ -40,13 +40,8 @@ export const generic_share_property =
         else {
             let num_shared = 0
             list.filter(m => exclude.indexOf(m) === -1).forEach(value => {
-                console.log("Checking ", value)
                 const key = prefix + '_' + value as Key
-                if (mon_1[key] === 1 && mon_2[key] === 1) {
-                    console.log("Share ", value)
-                    num_shared++
-                }
-                else console.log("Don't share ", value)
+                if (mon_1[key] === 1 && mon_2[key] === 1) num_shared++
             })
             return num_shared
         }

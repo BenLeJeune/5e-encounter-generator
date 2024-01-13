@@ -2,7 +2,7 @@ import {Node, Link, Monster, MonsterData} from "./types"
 import {calculate_encounter_xp, calculateEncounterXP} from "./helpers/xp_calculations";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
-import {share_language, share_tag, share_type} from "./helpers/monster_helpers";
+import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
 
 // - ========: TITLE :======== -
 
@@ -65,12 +65,13 @@ export const GenerateRandomEncounterR =
                 const neighbors = graph.links
                     .filter(link => link.target.id === current_node.id || link.source.id === current_node.id)
                     .reduce((prev, link) => {
+                        let weight = adjusted_link_weight(link)
                         if (link.target.id === current_node.id
                             && already_chosen_ids.indexOf(link.source.id) === -1)
-                            return [...prev, [link.source, link.weight] as [Node, number]]
+                            return [...prev, [link.source, weight] as [Node, number]]
                         if (link.source.id === current_node.id
                             && already_chosen_ids.indexOf(link.target.id) === -1)
-                            return [...prev, [link.target, link.weight] as [Node, number]]
+                            return [...prev, [link.target, weight] as [Node, number]]
                         return prev
                     }, [] as [Node, number][])
                 // Ignore any neighbors that would push us over the xp limit
@@ -201,4 +202,21 @@ export const GenerateRandomEncounterR =
         }
 
         return encounter
+}
+
+const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) => {
+    let {target, source, weight} = link
+    const tags_shared = share_tag(target, source, "count") as number
+    const langs_shared = share_language(target, source, "count") as number
+    const types_shared = share_type(target, source, "count") as number
+    const envs_shared = share_environment(target, source, "count") as number
+
+    if (tags_shared > 0) weight *= tags_shared + 1
+    if (langs_shared > 0) weight *= 1 + (0.3*langs_shared)
+    if (types_shared > 0) weight *= 1.2
+    if (envs_shared > 0) weight *= 1 + (0.03*envs_shared)
+
+    console.log("Adjusted weight: ", weight ** 2)
+
+    return weight ** 2
 }
