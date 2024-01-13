@@ -162,7 +162,7 @@ export const calculate_encounter_xp = (xp_num_pairs:[number, number][]) => {
     // of the form [xp, count]
     const XP = 0, NUM = 1
     const num_monsters = xp_num_pairs.reduce((p, n) => n[NUM] + p, 0)
-    const total_xp = xp_num_pairs.reduce((p, n) => n[XP] + p, 0)
+    const total_xp = xp_num_pairs.reduce((p, n) => (n[XP] * n[NUM]) + p, 0)
 
     let multiplier = 1
     switch(num_monsters) {
@@ -188,7 +188,6 @@ export const calculate_encounter_xp = (xp_num_pairs:[number, number][]) => {
         default:
             multiplier = 4;
     }
-
 
     return total_xp * multiplier
 }
