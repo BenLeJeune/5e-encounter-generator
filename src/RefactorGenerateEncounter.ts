@@ -2,6 +2,7 @@ import {Node, Link, Monster, MonsterData} from "./types"
 import {calculate_encounter_xp, calculateEncounterXP} from "./helpers/xp_calculations";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
+import {share_language, share_tag, share_type} from "./helpers/monster_helpers";
 
 // - ========: TITLE :======== -
 
