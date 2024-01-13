@@ -29,7 +29,7 @@ function App() {
 
     useEffect(() => {
         const getGraph = async() => {
-            const graph_data = await fetch(varUrl('data/graph.json'))
+            const graph_data = await fetch(varUrl('data/detailed_graph.json'))
             return await graph_data.json()
         }
 

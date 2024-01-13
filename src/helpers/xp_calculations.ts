@@ -32,6 +32,9 @@ export function calculateDailyXP(party:PlayerData[]) {
 }
 
 const XP_THRESHOLDS = {
+    "trivial": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
     "easy": [
         25, 50, 75, 125, 250, 300, 350, 450, 550, 600,
         800, 1000, 1100, 1250, 1400, 1600, 2000, 2100, 2400, 2800
@@ -47,8 +50,29 @@ const XP_THRESHOLDS = {
     "deadly": [
         100, 200, 400, 500, 1100, 1400, 1700, 2100, 2400, 2800,
         3600, 4500, 5100, 5700, 6400, 7200, 8800, 9500, 10900, 12700
+    ],
+    "absurd": [
+        125, 250, 575, 625, 1450, 1900, 2300, 2800, 3200, 3700, 4800,
+        6000, 6800, 7600, 8500, 9600, 11700, 12700, 14500, 16900
     ]
 } as { [key in Difficulty]: number[] }
+
+export const difficulty_increase = (difficulty:Difficulty) => {
+    switch (difficulty) {
+        case "trivial":
+            return "easy"
+        case "easy":
+            return "medium"
+        case "medium":
+            return "hard"
+        case "hard":
+            return "deadly"
+        case "deadly":
+        default:
+            return "absurd"
+    }
+
+}
 
 const XP_DAILY = [
     300, 600, 1200, 1700, 3500, 4000, 5000, 6000, 7500,
@@ -132,4 +156,39 @@ export const calculateEncounterXP = (encounter_counts:{[m:string]:number}, encou
     }
     return total_xp * multiplier
 
+}
+
+export const calculate_encounter_xp = (xp_num_pairs:[number, number][]) => {
+    // of the form [xp, count]
+    const XP = 0, NUM = 1
+    const num_monsters = xp_num_pairs.reduce((p, n) => n[NUM] + p, 0)
+    const total_xp = xp_num_pairs.reduce((p, n) => n[XP] + p, 0)
+
+    let multiplier = 1
+    switch(num_monsters) {
+        case 1:
+            break;
+        case 2:
+            multiplier = 1.5; break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            multiplier = 2; break;
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            multiplier = 2.5; break;
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+            multiplier = 3; break;
+        default:
+            multiplier = 4;
+    }
+
+
+    return total_xp * multiplier
 }

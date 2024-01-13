@@ -7,7 +7,7 @@ export type PlayerData = {
 
 export type valid_level = 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|undefined
 
-export type Difficulty = "easy" | "medium" | "hard" | "deadly"
+export type Difficulty = "trivial" | "easy" | "medium" | "hard" | "deadly" | "absurd"
 
 export type MonsterData = {
     monster_name:string,
@@ -17,7 +17,7 @@ export type MonsterData = {
     xp:number
 }
 
-export type Node = {id:string}
+export type Node = MonsterData & {id:string}
 export type Link = {source:Node, target:Node, weight:number}
 
 
@@ -38,6 +38,12 @@ type Monster_Environment_Key = `environment_${Monster_Environment}`
 export type Monster_Alignment = "C" | "E" | "G" | "L" | "N"
 type Monster_Alignment_Key = `alignment_${Monster_Alignment}`
 
+export type Monster_Language = 'abyssal'| 'aquan'| 'auran'| 'common'| 'celestial'| 'dwarvish'| 'draconic'|
+    'deep speech'| 'druidic'| 'elvish'| 'gnommish'| 'giant'| 'goblin'| 'gith'| 'halfling'| 'infernal'| 'ignan'| 'orc'| 'primordial'| 'sylvan'| 'terran'|
+    "thieves' cant"| 'undercommon'
+type Monster_Language_Key = `speaks_${Monster_Language}`
+
+
 type MonsterAlign = {
     [key in Monster_Alignment_Key]: "0" | "1"
 }
@@ -50,8 +56,11 @@ type MonsterType = {
 type MonsterTag = {
     [k in Monster_Tag_Key]: "0" | "1"
 }
+type MonsterLang = {
+    [k in Monster_Language_Key]: "0" | "1"
+}
 
-export type Monster = MonsterAlign & MonsterType & MonsterTag &
+export type Monster = MonsterAlign & MonsterType & MonsterTag & MonsterLang &
     MonsterEnv & {monster_name: string, cr: string, source: string, reprinted: "False" | "True"}
 
 export const MONSTER_TYPES = ["aberration" , "beast" , "celestial" , "construct" , "dragon" ,

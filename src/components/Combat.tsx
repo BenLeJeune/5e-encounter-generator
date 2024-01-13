@@ -1,6 +1,12 @@
 import React, {useContext, useState} from 'react';
 import {CombatContext} from "../context/CombatContext";
-import {calculateEncounterXP, calculatePartyXP, CR_TO_XP, parseCr} from "../helpers/xp_calculations";
+import {
+    calculateEncounterXP,
+    calculatePartyXP,
+    CR_TO_XP,
+    difficulty_increase,
+    parseCr
+} from "../helpers/xp_calculations";
 import {
     getMonsterAlignment,
     getMonsterEnvironments,
@@ -10,6 +16,7 @@ import {
 } from "../helpers/monster_parsers";
 import {Difficulty, Link, Monster, MonsterData, Node} from "../types";
 import {GenerateRandomEncounter} from "../GenerateEncounter";
+import {GenerateRandomEncounterR} from "../RefactorGenerateEncounter"
 import {PlayerContext} from "../context/PlayerContext";
 import { } from "iconoir-react"
 
@@ -37,8 +44,12 @@ export default function Combat({bestiary, graph, monsterStats, graphNodes}:Comba
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('hard')
 
     const generateEncounter = () => {
-        const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
-            Object.keys(combat), calculatePartyXP(players)[selectedDifficulty], numMonsters)
+        // const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
+        //     Object.keys(combat), calculatePartyXP(players)[selectedDifficulty], numMonsters)
+        const monsters = Object.keys(combat)
+        const xp_lim = calculatePartyXP(players)[difficulty_increase(selectedDifficulty)]
+        const encounter = GenerateRandomEncounterR(graph, monsters, xp_lim, numMonsters,
+            undefined, true)
         setCombat(encounter)
     }
 
