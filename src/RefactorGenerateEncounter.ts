@@ -29,6 +29,29 @@ export const GenerateRandomEncounterR =
             config.generate_mode = 'xp_unset'
         }
 
+        if (verbose) console.group("GENERATING AN ENCOUNTER")
+
+        // - ========: INFERRED LINKS :======== -
+        // We want to use inferred links, from creatures
+        // that share a tag, language, or type with another creature.
+        let inferred_links = [] as Link[]
+        const find_inferred_links = (source:Node) => {
+            const links_to_ret = [] as Link[]
+            // tag > language > type
+            const tag_matches = graph.nodes.filter(node => share_tag(node, source, "boolean"))
+            const lang_matches = graph.nodes.filter(node => share_language(node, source, "boolean")
+                && tag_matches.indexOf(node) === -1)
+            const type_matches = graph.nodes.filter(node => share_type(node, source, "boolean")
+                    && tag_matches.indexOf(node) === -1 && lang_matches.indexOf(node) === -1) as Node[] //???? needed?
+
+            // These will all later be augmented by adjusted_link_weight
+            [...tag_matches, ...lang_matches, ...type_matches].forEach(match => {
+                    links_to_ret.push({source:source, target:match, weight: 0.5} as Link)
+            })
+            return links_to_ret
+        }
+
+
         // - ========: CHOOSING THE MONSTERS :======== -
         // This is the part where we select the monsters
 
@@ -51,6 +74,15 @@ export const GenerateRandomEncounterR =
             console.log(monsters, nodes.length, monsters.length)
         }
 
+        // Update the inferred links
+        nodes.forEach(node => {
+            inferred_links.push(...find_inferred_links(node))
+        })
+
+        if (verbose) {
+            console.log("Initial inferred links: ", inferred_links)
+        }
+
         // Loop to add monsters
         const starting_len = nodes.length
         for (let i = 0; i < num - starting_len; i++) {
@@ -62,7 +94,7 @@ export const GenerateRandomEncounterR =
                 const discount = gamma ** j // nodes added later considered less
                 const current_node = nodes[j]
                 // Node-weight pairs
-                const neighbors = graph.links
+                const neighbors = [...graph.links, ...inferred_links]
                     .filter(link => link.target.id === current_node.id || link.source.id === current_node.id)
                     .reduce((prev, link) => {
                         let weight = adjusted_link_weight(link)
@@ -92,40 +124,14 @@ export const GenerateRandomEncounterR =
             // Now we have our option weights
             if (verbose) console.log(weights)
             if (Object.keys(weights).length === 0) {
-                // If there aren't any weights, we check for monsters that share tags, then languages, then type
-                const tag_matches = graph.nodes
-                    .filter(node => share_tag(node, nodes[0], "boolean") as boolean)
-                    .filter(node => already_chosen_ids.indexOf(node.id) === -1)
-                if (tag_matches.length > 0) {
-                    const random_match = tag_matches[Math.floor(Math.random() * tag_matches.length)]
-                    if (verbose) console.log("Found a tag match in", random_match)
-                    nodes.push(random_match)
-                }
-                else {
-                    const lang_matches = graph.nodes
-                        .filter(node => share_language(node, nodes[0], "boolean") as boolean)
-                        .filter(node => already_chosen_ids.indexOf(node.id) === -1)
-                    if (lang_matches.length > 0) {
-                        const random_match = lang_matches[Math.floor(Math.random() * lang_matches.length)]
-                        if (verbose) console.log("Found a language match in", random_match)
-                        nodes.push(random_match)
-                    }
-                    else {
-                        const type_matches = graph.nodes
-                            .filter(node => share_type(node, nodes[0], "boolean") as boolean)
-                            .filter(node => already_chosen_ids.indexOf(node.id) === -1)
-                        if (type_matches.length > 0) {
-                            const random_match = type_matches[Math.floor(Math.random() * type_matches.length)]
-                            if (verbose) console.log("Found a type match in", random_match)
-                            nodes.push(random_match)
-                        }
-                    }
-                }
+                console.log("No matches at all - including inferred links. Strange...")
             }
             else {
                 const choice_id = weightedRandomChoice(weights) as string
-                if (verbose) console.log(`Pushing ${choice_id}`)
-                nodes.push(all_nodes[choice_id])
+                const chosen_node = all_nodes[choice_id]
+                if (verbose) console.log(`Pushing ${choice_id}:`, chosen_node)
+                nodes.push(chosen_node)
+                inferred_links.push(...find_inferred_links(chosen_node))
             }
         }
 
@@ -232,6 +238,8 @@ export const GenerateRandomEncounterR =
 
         }
 
+        if (verbose) console.groupEnd()
+
         return encounter
 }
 
@@ -247,7 +255,5 @@ const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) =>
     if (types_shared > 0) weight *= 2.4
     if (envs_shared > 0) weight *= 1 + (0.2*envs_shared)
 
-    console.log("Adjusted weight: ", weight ** 2)
-
-    return weight **         2
+    return weight
 }

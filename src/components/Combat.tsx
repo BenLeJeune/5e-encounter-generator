@@ -45,6 +45,7 @@ export default function Combat({bestiary, graph, graphNodes}:CombatProps) {
         const xp_lim = calculatePartyXP(players)[difficulty_increase(selectedDifficulty)]
         const encounter = GenerateRandomEncounterR(graph, monsters, xp_lim, numMonsters,
             undefined, true)
+        console.log(calculatePartyXP(players))
         setCombat(encounter)
     }
 

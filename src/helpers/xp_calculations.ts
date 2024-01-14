@@ -5,7 +5,8 @@ export function calculatePartyXP(party:PlayerData[]) {
         "easy": 0,
         "medium": 0,
         "hard": 0,
-        "deadly": 0
+        "deadly": 0,
+        "absurd": 0
     } as {[key in Difficulty]: number}
 
 
@@ -79,7 +80,7 @@ const XP_DAILY = [
     9000, 10500, 11500, 13500, 15000, 18000, 20000, 25000, 27000, 30000, 40000
 ]
 
-export const DIFFICULTIES = ["easy", "medium", "hard", "deadly"] as Difficulty[]
+export const DIFFICULTIES = ["easy", "medium", "hard", "deadly", "absurd"] as Difficulty[]
 
 export const parseCr = (cr: string) => {
     if (cr === "0.125") return "1/8"

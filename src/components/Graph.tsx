@@ -46,9 +46,6 @@ export default function Graph({graph, all_nodes}:GraphProps) {
                         if (share_type(mon_1, mon_2, "boolean")) {
                             links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
                         }
-                        if (share_environment(mon_1, mon_2, "boolean")) {
-                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
-                        }
                     })
             })
 

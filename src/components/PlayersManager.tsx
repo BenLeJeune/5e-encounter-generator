@@ -67,7 +67,7 @@ function LevelGroup({index}:{index: number}) {
 
         setPlayerData(prev => [
             ...prev.slice(0, index),
-            { level: prev[index].level, num: n },
+            { level: prev[index].level, num: Math.max(Math.round(n), 0)},
             ...prev.slice(index + 1)
         ])
     }
