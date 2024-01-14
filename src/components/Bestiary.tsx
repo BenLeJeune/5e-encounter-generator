@@ -9,7 +9,7 @@ import {count} from "d3";
 import {CombatContext} from "../context/CombatContext";
 
 type Bestiary_Props = {
-    bestiary: Monster[],
+    bestiary: Node[],
     graphNodes:string[]
 }
 
@@ -48,8 +48,7 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
         e.preventDefault()
         const s = e.target.value
         if (bestiary) {
-            const filtered = bestiary.filter(m => m.monster_name.indexOf(s) !== -1)
-                .filter(m => showAllMonsters || graphNodes.indexOf(m.monster_name) !== -1)
+            const filtered = bestiary.filter(m => m.id.indexOf(s) !== -1)
                 // .filter(
                 //     m => {
                 //         const t = getMonsterType(m)
@@ -115,23 +114,13 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
     const displayBestiary = () => {
         if (bestiary) {
             const [start, end] = [(currentPage - 1) * pageLength, currentPage * pageLength]
-            const filtered = bestiary.filter(m => m.monster_name.indexOf(searchTerm.toLowerCase()) !== -1)
-                .filter(m => showAllMonsters || graphNodes.indexOf(m.monster_name) !== -1)
+            const filtered = bestiary.filter(m => m.id.indexOf(searchTerm.toLowerCase()) !== -1)
+                .sort((a, b) => a.id < b.id ? -1 : 1)
                 .slice(start, end)
-                // .filter(
-                //     m => {
-                //         const t = getMonsterType(m)
-                //         const tags = getMonsterTag(m)
-                //         const envs = getMonsterEnvironments(m)
-                //         return filters.types[t] &&
-                //         (envs.length === 0 || envs.reduce((prev, env) => prev || filters.envs[env], false))
-                //         && (tags.length === 0 || tags.reduce((prev, tag) => prev || filters.tags[tag], false))
-                //     }
-                // )
             if (filtered.length > 0) {
                 return filtered.map(monster =>
                     <>
-                        <BestiaryRow monster={monster} in_graph={graphNodes.indexOf(monster.monster_name) !== -1}/>
+                        <BestiaryRow monster={monster} in_graph={graphNodes.indexOf(monster.id) !== -1}/>
                         <hr className="mx-3"/>
                     </>
                 )
@@ -145,7 +134,6 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
     /// --==: Filters :==--
     //
     //const [filters, setFilters] = useState(filterDefaults(true))
-    const [showAllMonsters, setShowAllMonsters] = useState<boolean>(false)
 
     return bestiary ? <>
             <div className="container mb-1 d-flex flex-column">
@@ -160,12 +148,6 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
             {/*        Filters*/}
             {/*    </button>*/}
             {/*</div>*/}
-            <div className="col-auto">
-                <input type="checkbox" checked={showAllMonsters}
-                       onChange={e => setShowAllMonsters(b => !b)}
-                       className="btn-check" id="btn-check" autoComplete="off"/>
-                <label className="btn btn-outline-secondary" htmlFor="btn-check">Show All</label>
-            </div>
             <div className="col-auto">
                     <input type="text" value={searchTerm} onChange={handleSearch} className="form-control" id="monsterSearch" placeholder="Monster Name"/>
             </div>
@@ -292,7 +274,7 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
 }
 
 type BestiaryRowProps = {
-    monster: Monster,
+    monster: Node,
     in_graph:boolean
 }
 
@@ -307,7 +289,7 @@ export function BestiaryRow({monster, in_graph}:BestiaryRowProps) {
         else return m_type
     }
     const handleClick = () => {
-        const m = monster.monster_name
+        const m = monster.id
         setCombat(combat => {
             let prev_amount = 0
             if (m in combat) prev_amount = combat[m]
@@ -321,7 +303,7 @@ export function BestiaryRow({monster, in_graph}:BestiaryRowProps) {
     return <div className="row mt-2">
         <div className="col">
             <h6 className="text-capitalize">
-                {monster.monster_name} ({monster.source})
+                {monster.id} ({monster.source})
                 <small className="text-muted" style={{marginLeft: "1em"}}>
                     CR {parseCr(monster.cr)} · XP {CR_TO_XP[+monster.cr]}
                     { in_graph ? null : <span className="text-warning"> · Not in graph</span>}

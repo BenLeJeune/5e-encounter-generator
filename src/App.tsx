@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import './App.css';
 import PlayersManager from "./components/PlayersManager";
-import {Monster, MonsterData, Node, PlayerData} from "./types";
+import {Link, Monster, MonsterData, Node, PlayerData} from "./types";
 import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
@@ -21,7 +21,7 @@ function App() {
     const playerState = useState<PlayerData[]>([{level:undefined, num:undefined}])
     const combatState = useState<{[key:string]:number}>({})
 
-    const [graphData, setGraphData] = useState(undefined)
+    const [graphData, setGraphData] = useState<{nodes:Node[], links:Link[]}|undefined>(undefined)
     const [bestiaryData, setBestiaryData] = useState<Monster[]|undefined>(undefined)
     const [monsterStats, setMonsterStats] = useState<MonsterData[]>([])
 
@@ -51,14 +51,14 @@ function App() {
             }, {} as {[key:string]:Node})
         })
 
-        getBestiary().then(bestiary => {
-            const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
-            const sortedBestiary = (bestiary_obj as Monster[])
-                .slice(0, -1)
-                .filter(m => m.reprinted === "False")
-                .sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
-            setBestiaryData(sortedBestiary)
-        })
+        // getBestiary().then(bestiary => {
+        //     const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
+        //     const sortedBestiary = (bestiary_obj as Monster[])
+        //         .slice(0, -1)
+        //         .filter(m => m.reprinted === "False")
+        //         .sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
+        //     setBestiaryData(sortedBestiary)
+        // })
 
         getMonsterStats().then(monsterStats => {
             const monsterStatsObj = Papa.parse(monsterStats, {header:true}).data
@@ -107,7 +107,7 @@ function App() {
                             <hr className="my-4"/>
                         </div>
                         <div className="row flex-grow-1">
-                            {bestiaryData ? <Bestiary bestiary={bestiaryData} graphNodes={graphNodes}/> : <></>}
+                            {graphData ? <Bestiary bestiary={graphData.nodes} graphNodes={graphNodes}/> : <></>}
                         </div>
                     </div>
                     <div className="col d-flex flex-column">
@@ -118,7 +118,7 @@ function App() {
                         </div>
                         <div className="row flex-grow-1">
                             {bestiaryData && graphData ?
-                                <Combat graphNodes={graphNodes} bestiary={bestiaryData} graph={graphData}/>
+                                <Combat graphNodes={graphNodes} graph={graphData}/>
                                 :  <></>}
                         </div>
                     </div>

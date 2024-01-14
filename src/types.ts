@@ -61,7 +61,7 @@ type MonsterLang = {
 }
 
 export type Monster = MonsterAlign & MonsterType & MonsterTag & MonsterLang &
-    MonsterEnv & {monster_name: string, cr: string, source: string, reprinted: "False" | "True"}
+    MonsterEnv & {cr: string, source: string, reprinted: "False" | "True"}
 
 export const MONSTER_TYPES = ["aberration" , "beast" , "celestial" , "construct" , "dragon" ,
     "elemental" , "fey" , "fiend" , "giant", "humanoid", "monstrosity" , "ooze", "plant" , "undead"] as Monster_Type[]

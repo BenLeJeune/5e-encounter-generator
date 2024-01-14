@@ -12,22 +12,21 @@ import {
     getMonsterEnvironments,
     getTypeAndTag
 } from "../helpers/monster_parsers";
-import {Difficulty, Link, Monster, Node} from "../types";
-import {GenerateRandomEncounterR} from "../RefactorGenerateEncounter"
+import {Difficulty, Link, Node} from "../types";
+import {GenerateRandomEncounterR} from "../GenerateRandomEncounter"
 import {PlayerContext} from "../context/PlayerContext";
 
 type CombatProps = {
-    bestiary: Monster[],
     graph: {
         nodes:Node[],
         links:Link[]
     },
     graphNodes:string[]
 }
-export default function Combat({bestiary, graph, graphNodes}:CombatProps) {
+export default function Combat({graph, graphNodes}:CombatProps) {
 
     const monsterLookup = (name: string) => {
-        const matches = bestiary.filter(m => m.monster_name === name)
+        const matches = graph.nodes.filter(m => m.id === name)
         if (matches.length === 0) return null
         else return matches[0]
     }
@@ -71,9 +70,9 @@ export default function Combat({bestiary, graph, graphNodes}:CombatProps) {
         <div className="col flex-grow-1 position-relative">
             <div className="position-absolute h-100 w-100 overflow-y-auto overflow-x-hidden px-2 responsive-fill-block">
                 {
-                    Object.keys(combat).map(monster => [monster, monsterLookup(monster)] as [string, Monster|null])
+                    Object.keys(combat).map(monster => [monster, monsterLookup(monster)] as [string, Node|null])
                         .filter(m => m[1] !== null).map(
-                        monster => <CombatRow monster={monster[1] as Monster}
+                        monster => <CombatRow monster={monster[1] as Node}
                                         in_graph={graphNodes.indexOf(monster[0]) !== -1}/>
                     )
                 }
@@ -84,7 +83,7 @@ export default function Combat({bestiary, graph, graphNodes}:CombatProps) {
                 <h6>
                     Total: {calculateEncounterXP(
                     combat,
-                    Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Monster]).reduce(
+                    Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Node]).reduce(
                         (p, n) => {
                             return {
                                 ...p,
@@ -141,25 +140,25 @@ export default function Combat({bestiary, graph, graphNodes}:CombatProps) {
     </div>
 }
 
-type CombatRowProps = {monster:Monster, in_graph:boolean}
+type CombatRowProps = {monster:Node, in_graph:boolean}
 export function CombatRow({monster, in_graph}:CombatRowProps) {
 
     const [combat, setCombat] = useContext(CombatContext)
 
     const handleChange = (i:number) => (e:React.MouseEvent) => {
         e.preventDefault()
-        let new_count = combat[monster.monster_name] + i
+        let new_count = combat[monster.id] + i
         if (new_count === 0) setCombat(prevState => {
-            const {[monster.monster_name]: current, ...rest} = prevState
+            const {[monster.id]: current, ...rest} = prevState
             return rest
         })
-        else setCombat(prevState => {return {...prevState, [monster.monster_name]: new_count as number}})
+        else setCombat(prevState => {return {...prevState, [monster.id]: new_count as number}})
     }
 
     return <div className="row mt-2">
         <div className="col">
             <h6 className="text-capitalize">
-                {monster.monster_name} ({monster.source})
+                {monster.id} ({monster.source})
                 <small className="text-muted" style={{marginLeft: "1em"}}>
                     CR {parseCr(monster.cr)} · XP {CR_TO_XP[+monster.cr]}
                     { in_graph ? null : <span className="text-warning"> · Not in graph</span>}
@@ -176,7 +175,7 @@ export function CombatRow({monster, in_graph}:CombatRowProps) {
         <div className="col-auto justify-content-end align-items-center d-flex">
             <div className="input-group">
                 <button type="button" onClick={handleChange(-1)} className="btn btn-outline-secondary">-</button>
-                <div className="input-group-text" id="btnGroupAddon">{combat[monster.monster_name]}</div>
+                <div className="input-group-text" id="btnGroupAddon">{combat[monster.id]}</div>
                 <button type="button" onClick={handleChange(1)} className="btn btn-outline-secondary">+</button>
             </div>
         </div>
