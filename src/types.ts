@@ -45,23 +45,23 @@ export type Monster_Language_Key = `speaks_${Monster_Language}`
 
 
 type MonsterAlign = {
-    [key in Monster_Alignment_Key]: "0" | "1"
+    [key in Monster_Alignment_Key]: 0 | 1
 }
 type MonsterEnv = {
-    [k in Monster_Environment_Key]: "0" | "1"
+    [k in Monster_Environment_Key]:0 | 1
 }
 type MonsterType = {
-    [k in Monster_Type_Key]: "0" | "1"
+    [k in Monster_Type_Key]:0 | 1
 }
 type MonsterTag = {
-    [k in Monster_Tag_Key]: "0" | "1"
+    [k in Monster_Tag_Key]:0 | 1
 }
 type MonsterLang = {
-    [k in Monster_Language_Key]: "0" | "1"
+    [k in Monster_Language_Key]:0 | 1
 }
 
 export type Monster = MonsterAlign & MonsterType & MonsterTag & MonsterLang &
-    MonsterEnv & {cr: string, source: string, reprinted: "False" | "True"}
+    MonsterEnv & {cr: string, source: string, reprinted: "False" | "True", is_npc: 0 | 1}
 
 export const MONSTER_TYPES = ["aberration" , "beast" , "celestial" , "construct" , "dragon" ,
     "elemental" , "fey" , "fiend" , "giant", "humanoid", "monstrosity" , "ooze", "plant" , "undead"] as Monster_Type[]

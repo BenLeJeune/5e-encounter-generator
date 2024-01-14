@@ -38,13 +38,13 @@ export default function Graph({graph, all_nodes}:GraphProps) {
                     .forEach(monster_2 => {
                         const [mon_1, mon_2] = [all_nodes[monster_1], all_nodes[monster_2]]
                         if (share_tag(mon_1, mon_2, "boolean")) {
-                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                            links.push({source: mon_1, target: mon_2, weight: 0, type: "predicted"})
                         }
                         if (share_language(mon_1, mon_2, "boolean")) {
-                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                            links.push({source: mon_1, target: mon_2, weight: 0, type: "predicted"})
                         }
                         if (share_type(mon_1, mon_2, "boolean")) {
-                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                            links.push({source: mon_1, target: mon_2, weight: 0, type: "predicted"})
                         }
                     })
             })

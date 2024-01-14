@@ -64,7 +64,7 @@ export const GenerateRandomEncounterR =
 
         // if there aren't any nodes supplied, we pick a source node at random
         if (nodes.length === 0) {
-            const valid_nodes = graph.nodes.filter(node => node.xp <= xp_lim)
+            const valid_nodes = graph.nodes.filter(node => node.xp <= xp_lim && node.is_npc === 0)
             const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
             if (verbose) console.log(`No base node; randomly chose ${random_choice}`)
             nodes.push(random_choice)
@@ -96,6 +96,7 @@ export const GenerateRandomEncounterR =
                 // Node-weight pairs
                 const neighbors = [...graph.links, ...inferred_links]
                     .filter(link => link.target.id === current_node.id || link.source.id === current_node.id)
+                    .filter(link => link.target.is_npc === 0 && link.source.is_npc === 0)
                     .reduce((prev, link) => {
                         let weight = adjusted_link_weight(link)
                         if (link.target.id === current_node.id

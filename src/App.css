@@ -1,7 +1,8 @@
 #graph-column {
   padding: 0;
-  min-height: 500px;
+  min-height: 50vh;
 }
+
 
 #graph-column > div {
   display: inline;
@@ -33,6 +34,7 @@ div.mobileOnly {
 }
 
 @media (max-width: 768px) {
+
   div.responsive-fill-block {
     min-height: 100px;
     max-height: 400px;

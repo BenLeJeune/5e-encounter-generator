@@ -22,7 +22,6 @@ function App() {
     const combatState = useState<{[key:string]:number}>({})
 
     const [graphData, setGraphData] = useState<{nodes:Node[], links:Link[]}|undefined>(undefined)
-    const [bestiaryData, setBestiaryData] = useState<Monster[]|undefined>(undefined)
     const [monsterStats, setMonsterStats] = useState<MonsterData[]>([])
 
     const [graphNodes, setGraphNodes] = useState<string[]>([])
@@ -30,13 +29,9 @@ function App() {
     useEffect(() => {
         const getGraph = async() => {
             const graph_data = await fetch(varUrl('data/detailed_graph.json'))
-            return await graph_data.json()
+            return await graph_data.json() as {nodes:Node[], links:Link[]}
         }
 
-        const getBestiary = async () => {
-            const bestiary = await fetch(varUrl('data/bestiary.csv'))
-            return bestiary.text();
-        }
 
         const getMonsterStats = async () => {
             const monsterStats = await fetch(varUrl('data/monster_data.csv'))
@@ -50,15 +45,6 @@ function App() {
                 return {...p, [n.id]: n}
             }, {} as {[key:string]:Node})
         })
-
-        // getBestiary().then(bestiary => {
-        //     const bestiary_obj = Papa.parse(bestiary, {header:true}).data.slice(1)
-        //     const sortedBestiary = (bestiary_obj as Monster[])
-        //         .slice(0, -1)
-        //         .filter(m => m.reprinted === "False")
-        //         .sort((a, b) => a.monster_name < b.monster_name ? -1 : 1)
-        //     setBestiaryData(sortedBestiary)
-        // })
 
         getMonsterStats().then(monsterStats => {
             const monsterStatsObj = Papa.parse(monsterStats, {header:true}).data
@@ -117,7 +103,7 @@ function App() {
                             }
                         </div>
                         <div className="row flex-grow-1">
-                            {bestiaryData && graphData ?
+                            {graphData ?
                                 <Combat graphNodes={graphNodes} graph={graphData}/>
                                 :  <></>}
                         </div>

@@ -136,7 +136,7 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
     //const [filters, setFilters] = useState(filterDefaults(true))
 
     return bestiary ? <>
-            <div className="container mb-1 d-flex flex-column">
+            <div className="container mb-1 d-flex flex-column" style={{minHeight: "300px"}}>
         <div className="row">
             <div className="col">
                 <h4>Bestiary</h4>
