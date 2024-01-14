@@ -118,7 +118,7 @@ function App() {
                         </div>
                         <div className="row flex-grow-1">
                             {bestiaryData && graphData ?
-                                <Combat graphNodes={graphNodes} monsterStats={monsterStats} bestiary={bestiaryData} graph={graphData}/>
+                                <Combat graphNodes={graphNodes} bestiary={bestiaryData} graph={graphData}/>
                                 :  <></>}
                         </div>
                     </div>

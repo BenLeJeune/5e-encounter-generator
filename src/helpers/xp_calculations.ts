@@ -125,35 +125,37 @@ export const CR_TO_XP = {
     30: 155000
 } as {[key:number]:number}
 
-export const calculateEncounterXP = (encounter_counts:{[m:string]:number}, encounter_xps:{[m:string]:number}) => {
-    // Should be of the form (count, xp)
-    const num_monsters = Object.values(encounter_counts).reduce((p, n) => p + n, 0)
-    const total_xp = Object.keys(encounter_xps).reduce((p, mon) => p + (encounter_counts[mon] * encounter_xps[mon]), 0)
-    let multiplier = 1
+const xp_multiplier = (num_monsters:number) => {
     switch(num_monsters) {
         case 1:
-            break;
+            return 1
         case 2:
-            multiplier = 1.5; break;
+            return 1.5;
         case 3:
         case 4:
         case 5:
         case 6:
-            multiplier = 2; break;
+            return 2;
         case 7:
         case 8:
         case 9:
         case 10:
-            multiplier = 2.5; break;
+            return 2.5;
         case 11:
         case 12:
         case 13:
         case 14:
-            multiplier = 3; break;
+            return 3;
         default:
-            multiplier = 4;
-
+            return 4;
     }
+}
+
+export const calculateEncounterXP = (encounter_counts:{[m:string]:number}, encounter_xps:{[m:string]:number}) => {
+    // Should be of the form (count, xp)
+    const num_monsters = Object.values(encounter_counts).reduce((p, n) => p + n, 0)
+    const total_xp = Object.keys(encounter_xps).reduce((p, mon) => p + (encounter_counts[mon] * encounter_xps[mon]), 0)
+    let multiplier = xp_multiplier(num_monsters)
     return total_xp * multiplier
 
 }
@@ -164,30 +166,7 @@ export const calculate_encounter_xp = (xp_num_pairs:[number, number][]) => {
     const num_monsters = xp_num_pairs.reduce((p, n) => n[NUM] + p, 0)
     const total_xp = xp_num_pairs.reduce((p, n) => (n[XP] * n[NUM]) + p, 0)
 
-    let multiplier = 1
-    switch(num_monsters) {
-        case 1:
-            break;
-        case 2:
-            multiplier = 1.5; break;
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-            multiplier = 2; break;
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-            multiplier = 2.5; break;
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-            multiplier = 3; break;
-        default:
-            multiplier = 4;
-    }
+    let multiplier = xp_multiplier(num_monsters)
 
     return total_xp * multiplier
 }

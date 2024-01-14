@@ -83,7 +83,7 @@ export const GenerateRandomEncounterR =
                     return new_xp < xp_lim
                 })
                 // We add the relative weights
-                const total_weight = valid_neighbors.reduce((prev, [node, weight]) => prev + weight, 0)
+                const total_weight = valid_neighbors.reduce((prev, [_, weight]) => prev + weight, 0)
                 valid_neighbors.forEach(([neighbor, weight]) => {
                     if (neighbor.id in weights) weights[neighbor.id] += discount * weight / total_weight
                     else weights[neighbor.id] = discount * weight / total_weight
@@ -96,11 +96,30 @@ export const GenerateRandomEncounterR =
                 const tag_matches = graph.nodes
                     .filter(node => share_tag(node, nodes[0], "boolean") as boolean)
                     .filter(node => already_chosen_ids.indexOf(node.id) === -1)
-                if (verbose) console.log("Tag matches:", share_tag(all_nodes['yuan-ti abomination'], all_nodes['yuan-ti malison (type 1)'], "boolean"))
                 if (tag_matches.length > 0) {
                     const random_match = tag_matches[Math.floor(Math.random() * tag_matches.length)]
                     if (verbose) console.log("Found a tag match in", random_match)
                     nodes.push(random_match)
+                }
+                else {
+                    const lang_matches = graph.nodes
+                        .filter(node => share_language(node, nodes[0], "boolean") as boolean)
+                        .filter(node => already_chosen_ids.indexOf(node.id) === -1)
+                    if (lang_matches.length > 0) {
+                        const random_match = lang_matches[Math.floor(Math.random() * lang_matches.length)]
+                        if (verbose) console.log("Found a language match in", random_match)
+                        nodes.push(random_match)
+                    }
+                    else {
+                        const type_matches = graph.nodes
+                            .filter(node => share_type(node, nodes[0], "boolean") as boolean)
+                            .filter(node => already_chosen_ids.indexOf(node.id) === -1)
+                        if (type_matches.length > 0) {
+                            const random_match = type_matches[Math.floor(Math.random() * type_matches.length)]
+                            if (verbose) console.log("Found a type match in", random_match)
+                            nodes.push(random_match)
+                        }
+                    }
                 }
             }
             else {
@@ -122,7 +141,7 @@ export const GenerateRandomEncounterR =
             }
         }, {} as StringTypeDict<number>)
         const combat_xps = nodes.map(node => node.xp)
-        const combat_total_xp = combat_xps.reduce((p, n) => p + 1, 0)
+        const combat_total_xp = combat_xps.reduce((p, n) => p + n, 0)
         const combat_min_xp = combat_xps.reduce((p, n) => Math.min(p, n), 0)
         const combat_max_xp = combat_xps.reduce((p, n) => Math.max(p, n), 0)
         const combat_avg_xp =  combat_total_xp / combat_xps.length

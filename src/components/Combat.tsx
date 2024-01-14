@@ -10,15 +10,11 @@ import {
 import {
     getMonsterAlignment,
     getMonsterEnvironments,
-    getMonsterTag,
-    getMonsterType,
     getTypeAndTag
 } from "../helpers/monster_parsers";
-import {Difficulty, Link, Monster, MonsterData, Node} from "../types";
-import {GenerateRandomEncounter} from "../GenerateEncounter";
+import {Difficulty, Link, Monster, Node} from "../types";
 import {GenerateRandomEncounterR} from "../RefactorGenerateEncounter"
 import {PlayerContext} from "../context/PlayerContext";
-import { } from "iconoir-react"
 
 type CombatProps = {
     bestiary: Monster[],
@@ -26,10 +22,9 @@ type CombatProps = {
         nodes:Node[],
         links:Link[]
     },
-    monsterStats: MonsterData[],
     graphNodes:string[]
 }
-export default function Combat({bestiary, graph, monsterStats, graphNodes}:CombatProps) {
+export default function Combat({bestiary, graph, graphNodes}:CombatProps) {
 
     const monsterLookup = (name: string) => {
         const matches = bestiary.filter(m => m.monster_name === name)

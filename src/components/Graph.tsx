@@ -1,9 +1,9 @@
-import React, {useContext, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
 import {Node, Link} from "../types";
 import {ForceGraph2D} from "react-force-graph";
 import {toTitleCase} from "../helpers/misc_helpers";
 import {CombatContext} from "../context/CombatContext";
-import {share_tag} from "../helpers/monster_helpers";
+import {share_environment, share_language, share_tag, share_type} from "../helpers/monster_helpers";
 
 type GraphProps = {
     graph: {
@@ -30,14 +30,23 @@ export default function Graph({graph, all_nodes}:GraphProps) {
             nodes = nodes.filter(node => valid_nodes.indexOf(node.id) !== -1 || node.id in combat)
             links = links.filter(link => valid_nodes.indexOf(link.source.id) !== -1 && valid_nodes.indexOf(link.target.id) !== -1)
 
-            // We look for any isolated nodes (e.g if the first node selected/randomly chosen has no neighbors)
+            // We look for any isolated nodes (e.g. if the first node selected/randomly chosen has no neighbors)
             // We add links with the tag "predicted" for any shared tags
             let isolated = Object.keys(combat).filter(monster_name => valid_nodes.indexOf(monster_name) === -1)
             isolated.forEach(monster_1 => {
-                Object.keys(combat).filter(mon => mon !== monster_1)
+                [...valid_nodes, ...isolated].filter(mon => mon !== monster_1)
                     .forEach(monster_2 => {
                         const [mon_1, mon_2] = [all_nodes[monster_1], all_nodes[monster_2]]
                         if (share_tag(mon_1, mon_2, "boolean")) {
+                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                        }
+                        if (share_language(mon_1, mon_2, "boolean")) {
+                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                        }
+                        if (share_type(mon_1, mon_2, "boolean")) {
+                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                        }
+                        if (share_environment(mon_1, mon_2, "boolean")) {
                             links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
                         }
                     })
@@ -72,7 +81,7 @@ export default function Graph({graph, all_nodes}:GraphProps) {
             nodeColor={node => node.id in combat || Object.keys(combat).length === 0 ? "#0d6efd" : "#6c757d"}
             linkColor={link => link.target.id in combat && link.source.id in combat? "#0d6efd" : "#6c757d"}
             linkWidth={link => link.target.id in combat && link.source.id in combat? 3 : 1}
-            linkLineDash={link => "type" in link ? [10, 5] : []}
+            linkLineDash={link => "type" in link ? [5, 5] : []}
             nodeLabel={node => toTitleCase((node as any)['id'])}
             nodeVal={node => node.id in combat ? 1.5 : 1}
             graphData={currentGraphData()}
