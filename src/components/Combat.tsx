@@ -102,6 +102,12 @@ export default function Combat({graph, graphNodes}:CombatProps) {
                         Generate Encounter
                     </button>
                 </div>
+                <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons mobileHide">
+                    <button className="btn btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#encounterDetailModal">
+                        Suggestions
+                    </button>
+                </div>
                 <div className="col mobileOnly">
                     <button className="btn btn-lg btn-outline-danger" onClick={clearEncounter}>
                         Clear

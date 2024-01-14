@@ -30,3 +30,6 @@ export const weightedRandomChoice = (weights:{[choice:string]:number}) => {
     return null
 }
 
+export const random_from_list = <T>(list:T[]) => {
+    return list[Math.floor(Math.random() * list.length)]
+}
