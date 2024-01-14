@@ -26,7 +26,7 @@ export const weightedRandomChoice = (weights:{[choice:string]:number}) => {
         if (random > running_total && random <= upper_bound) return choice
         running_total = upper_bound
     }
-    console.log("ERROR")
+    console.log("RANDOM CHOICE ERROR")
     return null
 }
 

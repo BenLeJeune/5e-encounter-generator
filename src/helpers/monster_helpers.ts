@@ -31,11 +31,12 @@ export const generic_share_property =
     <Property, Key extends keyof Node>(mon_1:Node, mon_2:Node, mode:"count"|"boolean", list:Property[], prefix:string, exclude:Property[]=[]) =>
     {
         if (mode === "boolean") {
+            let match = false
             list.filter(m => exclude.indexOf(m) === -1).forEach(value => {
                 const key = prefix + '_' + value as Key
-                if (mon_1[key] === 1 && mon_2[key] === 1) return true
+                if (mon_1[key] === 1 && mon_2[key] === 1) match = true
             })
-            return false
+            return match
         }
         else {
             let num_shared = 0

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import './App.css';
 import PlayersManager from "./components/PlayersManager";
 import {Monster, MonsterData, Node, PlayerData} from "./types";
@@ -46,6 +46,9 @@ function App() {
         getGraph().then(graph => {
             setGraphData(graph)
             setGraphNodes((graph.nodes as {id:string}[]).map(n => n.id))
+            all_nodes_ref.current = (graph.nodes as Node[]).reduce((p, n) => {
+                return {...p, [n.id]: n}
+            }, {} as {[key:string]:Node})
         })
 
         getBestiary().then(bestiary => {
@@ -62,6 +65,8 @@ function App() {
             setMonsterStats((monsterStatsObj as MonsterData[]).slice(0, -1))
         })
     }, [])
+
+    const all_nodes_ref = useRef<{[key:string]:Node}>({})
 
     const showModal = (e:React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault()
@@ -108,7 +113,7 @@ function App() {
                     <div className="col d-flex flex-column">
                         <div className="row" id="graph-column">
                             {
-                                graphData ? <Graph graph={graphData}/> : <></>
+                                graphData ? <Graph graph={graphData} all_nodes={all_nodes_ref.current}/> : <></>
                             }
                         </div>
                         <div className="row flex-grow-1">

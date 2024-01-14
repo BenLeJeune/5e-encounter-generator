@@ -1,5 +1,5 @@
-import {Node, Link, Monster, MonsterData} from "./types"
-import {calculate_encounter_xp, calculateEncounterXP} from "./helpers/xp_calculations";
+import {Node, Link} from "./types"
+import {calculate_encounter_xp} from "./helpers/xp_calculations";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
@@ -91,7 +91,18 @@ export const GenerateRandomEncounterR =
             }
             // Now we have our option weights
             if (verbose) console.log(weights)
-            if (Object.keys(weights).length === 0) break;
+            if (Object.keys(weights).length === 0) {
+                // If there aren't any weights, we check for monsters that share tags, then languages, then type
+                const tag_matches = graph.nodes
+                    .filter(node => share_tag(node, nodes[0], "boolean") as boolean)
+                    .filter(node => already_chosen_ids.indexOf(node.id) === -1)
+                if (verbose) console.log("Tag matches:", share_tag(all_nodes['yuan-ti abomination'], all_nodes['yuan-ti malison (type 1)'], "boolean"))
+                if (tag_matches.length > 0) {
+                    const random_match = tag_matches[Math.floor(Math.random() * tag_matches.length)]
+                    if (verbose) console.log("Found a tag match in", random_match)
+                    nodes.push(random_match)
+                }
+            }
             else {
                 const choice_id = weightedRandomChoice(weights) as string
                 if (verbose) console.log(`Pushing ${choice_id}`)
@@ -125,6 +136,7 @@ export const GenerateRandomEncounterR =
             encounter[node.id] = Math.max(Math.round(num_predicted), 1)
         })
 
+        // The predicted count over the combat size. Used as weights for adding/removing.
         const predicted_fracs = Object.keys(encounter).reduce((prev, key) => {
             return {...prev, [key]: encounter[key] / nodes.length}
         }, {} as StringTypeDict<number>)
@@ -211,12 +223,12 @@ const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) =>
     const types_shared = share_type(target, source, "count") as number
     const envs_shared = share_environment(target, source, "count") as number
 
-    if (tags_shared > 0) weight *= tags_shared + 1
-    if (langs_shared > 0) weight *= 1 + (0.3*langs_shared)
-    if (types_shared > 0) weight *= 1.2
-    if (envs_shared > 0) weight *= 1 + (0.03*envs_shared)
+    if (tags_shared > 0) weight *= 2 * (tags_shared + 1)
+    if (langs_shared > 0) weight *= 2 + (0.6*langs_shared)
+    if (types_shared > 0) weight *= 2.4
+    if (envs_shared > 0) weight *= 1 + (0.2*envs_shared)
 
     console.log("Adjusted weight: ", weight ** 2)
 
-    return weight ** 2
+    return weight **         2
 }

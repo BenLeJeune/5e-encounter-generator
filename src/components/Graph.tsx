@@ -3,14 +3,18 @@ import {Node, Link} from "../types";
 import {ForceGraph2D} from "react-force-graph";
 import {toTitleCase} from "../helpers/misc_helpers";
 import {CombatContext} from "../context/CombatContext";
+import {share_tag} from "../helpers/monster_helpers";
 
 type GraphProps = {
     graph: {
         nodes:Node[],
         links:Link[]
+    },
+    all_nodes: {
+        [monster_name:string]:Node
     }
 }
-export default function Graph({graph}:GraphProps) {
+export default function Graph({graph, all_nodes}:GraphProps) {
 
     const [dimensions, setDimensions] = useState({width:0, height:0})
 
@@ -21,9 +25,25 @@ export default function Graph({graph}:GraphProps) {
         else {
             let {nodes, links} = graph
             let direct_links = links.filter(link => link.source.id in combat || link.target.id in combat)
+            // valid_nodes are nodes with a direct connection to a combat node - isolated combat nodes not included
             let valid_nodes = direct_links.reduce((p, n) => [...p, n.source.id, n.target.id], [] as string[])
             nodes = nodes.filter(node => valid_nodes.indexOf(node.id) !== -1 || node.id in combat)
             links = links.filter(link => valid_nodes.indexOf(link.source.id) !== -1 && valid_nodes.indexOf(link.target.id) !== -1)
+
+            // We look for any isolated nodes (e.g if the first node selected/randomly chosen has no neighbors)
+            // We add links with the tag "predicted" for any shared tags
+            let isolated = Object.keys(combat).filter(monster_name => valid_nodes.indexOf(monster_name) === -1)
+            isolated.forEach(monster_1 => {
+                Object.keys(combat).filter(mon => mon !== monster_1)
+                    .forEach(monster_2 => {
+                        const [mon_1, mon_2] = [all_nodes[monster_1], all_nodes[monster_2]]
+                        if (share_tag(mon_1, mon_2, "boolean")) {
+                            links.push({source: mon_1, target: mon_2, weight: 0.1, type: "predicted"})
+                        }
+                    })
+            })
+
+
             return {nodes, links}
         }
     }
@@ -52,6 +72,7 @@ export default function Graph({graph}:GraphProps) {
             nodeColor={node => node.id in combat || Object.keys(combat).length === 0 ? "#0d6efd" : "#6c757d"}
             linkColor={link => link.target.id in combat && link.source.id in combat? "#0d6efd" : "#6c757d"}
             linkWidth={link => link.target.id in combat && link.source.id in combat? 3 : 1}
+            linkLineDash={link => "type" in link ? [10, 5] : []}
             nodeLabel={node => toTitleCase((node as any)['id'])}
             nodeVal={node => node.id in combat ? 1.5 : 1}
             graphData={currentGraphData()}

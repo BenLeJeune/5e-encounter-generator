@@ -18,7 +18,7 @@ export type MonsterData = {
 }
 
 export type Node = Monster & MonsterData & {id:string}
-export type Link = {source:Node, target:Node, weight:number}
+export type Link = {source:Node, target:Node, weight:number} & Partial<{type: "predicted"}>
 
 
 export type Monster_Type = "aberration" | "beast" | "celestial" | "construct" | "dragon" |
