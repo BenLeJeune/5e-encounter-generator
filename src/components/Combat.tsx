@@ -102,12 +102,6 @@ export default function Combat({graph, graphNodes}:CombatProps) {
                         Generate Encounter
                     </button>
                 </div>
-                <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons mobileHide">
-                    <button className="btn btn-outline-primary" data-bs-toggle="modal"
-                            data-bs-target="#encounterDetailModal">
-                        Suggestions
-                    </button>
-                </div>
                 <div className="col mobileOnly">
                     <button className="btn btn-lg btn-outline-danger" onClick={clearEncounter}>
                         Clear
@@ -129,11 +123,11 @@ export default function Combat({graph, graphNodes}:CombatProps) {
                         <option value="deadly">Deadly</option>
                     </select>
                     <input className="form-control" type="number" value={numMonsters} onChange={handleNumChange}/>
-                    <select className="form-select">
-                        <option selected value="random">Random</option>
-                        {/*<option value="boss_minions">Boss & Minions</option>*/}
-                        {/*<option value="2_monsters">2 Monsters</option>*/}
-                    </select>
+                    {/*<select className="form-select">*/}
+                    {/*    <option selected value="random">Random</option>*/}
+                    {/*    /!*<option value="boss_minions">Boss & Minions</option>*!/*/}
+                    {/*    /!*<option value="2_monsters">2 Monsters</option>*!/*/}
+                    {/*</select>*/}
                 </div>
             </div>
             <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons mobileHide">

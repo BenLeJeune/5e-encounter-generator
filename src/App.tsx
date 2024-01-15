@@ -15,7 +15,8 @@ import {varUrl} from "./helpers/misc_helpers";
 import Combat from "./components/Combat";
 import Papa from "papaparse";
 import AboutModal from "./components/AboutModal";
-import EncounterDetailModal from "./components/EncounterDetailModal";
+import SuggestionsInfo from "./components/SuggestionsInfo";
+import Suggestions from "./components/Suggestions";
 
 function App() {
 
@@ -67,7 +68,7 @@ function App() {
 
     return  <>
         <AboutModal/>
-        <EncounterDetailModal/>
+        <SuggestionsInfo/>
     <PlayerContext.Provider value={playerState}>
         <CombatContext.Provider value={combatState}>
           <div className="container-fluid">
@@ -98,7 +99,7 @@ function App() {
                             {graphData ? <Bestiary bestiary={graphData.nodes} graphNodes={graphNodes}/> : <></>}
                         </div>
                     </div>
-                    <div className="col-md-4 d-flex flex-column">
+                    <div className="col-md-5 d-flex flex-column">
                         <div className="row" id="graph-column">
                             {
                                 graphData ? <Graph graph={graphData} all_nodes={all_nodes_ref.current}/> : <></>
@@ -109,6 +110,9 @@ function App() {
                                 <Combat graphNodes={graphNodes} graph={graphData}/>
                                 :  <></>}
                         </div>
+                    </div>
+                    <div className="col-md-3 d-flex flex-column">
+                        <Suggestions all_nodes={all_nodes_ref.current}/>
                     </div>
                 </div>
             </div>

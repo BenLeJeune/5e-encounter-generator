@@ -1,12 +1,3 @@
-export const generic_underwater_hazards = [
-    "At initiative count 20 (losing ties), an unseen force creates whirlpools, requiring Dexterity saving throws to avoid being pulled in and potentially restrained.",
-    "When creatures move quickly, the water temperature drops suddenly, requiring Constitution saving throws to avoid taking cold damage and potentially being slowed.",
-    "At the end of a player's turn, if they remain in one place, phosphorescent plankton attract predatory creatures, requiring Dexterity saving throws to avoid being attacked.",
-    "When creatures create bright light sources, deep-sea shadows converge, requiring Wisdom saving throws to avoid being frightened and potentially suffering from disadvantage on attacks.",
-    "At initiative count 20 (losing ties), an ancient curse awakens, requiring Charisma saving throws to resist being haunted and potentially suffering from the effects of a bane spell."
-]
-
-
 export const underwater_locations = {
     "Bioluminescent Trench": {
         "description": "A deep trench illuminated by bioluminescent organisms, creating a mesmerizing light show in the perpetual darkness of the ocean depths.",
