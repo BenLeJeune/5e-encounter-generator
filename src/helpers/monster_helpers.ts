@@ -58,9 +58,9 @@ export const share_type = (mon_1:Node, mon_2:Node, mode:"count"|"boolean", inclu
     generic_share_property<Monster_Type, Monster_Type_Key>
     (mon_1, mon_2, mode, MONSTER_TYPES, 'type', include_humanoid ? [] : ['humanoid'])
 
-export const share_tag = (mon_1:Node, mon_2:Node, mode:"count"|"boolean") =>
+export const share_tag = (mon_1:Node, mon_2:Node, mode:"count"|"boolean", include_human=false) =>
     generic_share_property<Monster_Tag, Monster_Tag_Key>
-    (mon_1, mon_2, mode, MONSTER_TAGS, 'tag', )
+    (mon_1, mon_2, mode, MONSTER_TAGS, 'tag', include_human ? [] : ['human'])
 
 
 export const share_environment = (mon_1:Node, mon_2:Node, mode:"count"|"boolean") =>

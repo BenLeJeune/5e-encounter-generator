@@ -1,9 +1,10 @@
-import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {Node, Link} from "../types";
 import {ForceGraph2D} from "react-force-graph";
 import {toTitleCase} from "../helpers/misc_helpers";
 import {CombatContext} from "../context/CombatContext";
 import {share_environment, share_language, share_tag, share_type} from "../helpers/monster_helpers";
+import * as d3 from 'd3';
 
 type GraphProps = {
     graph: {
@@ -57,8 +58,22 @@ export default function Graph({graph, all_nodes}:GraphProps) {
     useLayoutEffect(() => {
         window.addEventListener("resize", handle_resize)
         handle_resize()
+
+        const fg = fgRef.current as any
+
+        fg.d3Force('center', null)
+        fg.d3Force('charge', d3.forceManyBody())
+        fg.d3Force('x', d3.forceX())
+        fg.d3Force('y', d3.forceY())
+
         return () => window.removeEventListener("resize", handle_resize)
     }, [])
+
+    useEffect(() => {
+        if (fgRef.current) {
+            (fgRef.current as any).zoomToFit(400)
+        }
+    }, [graph])
 
     const handle_resize = () => {
         const col = document.getElementById("graph-column")
@@ -82,7 +97,5 @@ export default function Graph({graph, all_nodes}:GraphProps) {
             nodeLabel={node => toTitleCase((node as any)['id'])}
             nodeVal={node => node.id in combat ? 1.5 : 1}
             graphData={currentGraphData()}
-            onEngineStop={() => { // @ts-ignore
-            }}
     />
 }

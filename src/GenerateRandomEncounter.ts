@@ -1,5 +1,5 @@
 import {Node, Link, StringTypeDict} from "./types"
-import {calculate_encounter_xp} from "./helpers/xp_calculations";
+import {calculate_encounter_xp, xp_multiplier} from "./helpers/xp_calculations";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
@@ -31,6 +31,7 @@ export const GenerateRandomEncounter =
         const min_xp = xp_lim === Number.POSITIVE_INFINITY ? 0 : xp_lim / 30
 
         if (verbose) console.group("GENERATING AN ENCOUNTER")
+        console.log("Config", config)
         console.log("Chosen min xp as ", min_xp)
 
         // - ========: INFERRED LINKS :======== -
@@ -82,7 +83,8 @@ export const GenerateRandomEncounter =
 
         // if there aren't any nodes supplied, we pick a source node at random
         if (nodes.length === 0) {
-            const valid_nodes = graph.nodes.filter(node => node.xp <= xp_lim && node.is_npc === 0 && node.xp >= min_xp)
+            const max_xp = (xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp)
+            const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
             const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
             if (verbose) console.log(`No base node; randomly chose ${random_choice}`)
             nodes.push(random_choice)
@@ -100,10 +102,14 @@ export const GenerateRandomEncounter =
             console.log("Initial inferred links: ", inferred_links)
         }
 
+
         // Loop to add monsters
         const starting_len = nodes.length
         for (let i = 0; i < num - starting_len; i++) {
             let weights = {} as StringTypeDict<number>
+            // The max monster xp we can get away with adding.
+            const max_xp = (xp_lim / xp_multiplier(num)) - nodes.reduce((p, n) => n.xp + p, 0) - ((num - 1 - nodes.length) * min_xp)
+            if (verbose) console.log("Max xp to add at next step:", max_xp)
             const already_chosen_ids = nodes.map(node => node.id)
             if (verbose) console.log("Already chosen so far: ", already_chosen_ids)
             // For each node, we search for neighbors
@@ -125,7 +131,7 @@ export const GenerateRandomEncounter =
                         return prev
                     }, [] as [Node, number][])
                 // Ignore any neighbors that would push us over the xp limit
-                const valid_neighbors = neighbors.filter(pair => pair[0].xp >= min_xp).filter(pair => {
+                const valid_neighbors = neighbors.filter(pair => pair[0].xp >= min_xp && pair[0].xp <= max_xp).filter(pair => {
                     const neighbor = pair[0]
                     const new_xp = calculate_encounter_xp(
                         [...nodes.map(node => [node.xp, 1] as [number, number]), [neighbor.xp, 1]]
@@ -140,9 +146,15 @@ export const GenerateRandomEncounter =
                 })
             }
             // Now we have our option weights
-            if (verbose) console.log(weights)
+            if (verbose) console.log("Weights: ", weights)
             if (Object.keys(weights).length === 0) {
-                console.log("No matches at all - including inferred links. Strange...")
+                console.log("No matches at all - including inferred links. We pick an unrelated node at random")
+                const max_xp = (xp_lim / xp_multiplier(num)) - nodes.reduce((p, n) => n.xp + p, 0) - ((num - 1 - nodes.length) * min_xp)
+
+                const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
+                const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
+                console.log("Randomly selected", random_choice)
+                nodes.push(random_choice)
             }
             else {
                 const choice_id = weightedRandomChoice(weights) as string

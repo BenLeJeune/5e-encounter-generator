@@ -141,7 +141,7 @@ export const CR_TO_XP = {
     30: 155000
 } as {[key:number]:number}
 
-const xp_multiplier = (num_monsters:number) => {
+export const xp_multiplier = (num_monsters:number) => {
     switch(num_monsters) {
         case 1:
             return 1

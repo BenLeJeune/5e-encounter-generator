@@ -151,7 +151,7 @@ export const encounter_classifier = (encounter:StringTypeDict<number>, all_nodes
                 `The ${pair_name} attack the party, while ${name_1} tries to escape.`,
                 `The ${pair_name} protect ${name_1}, and try to keep the party away from them.`,
                 `${capitalise(name_1)} begins commanding the ${pair_name}, who have strategic target selection while ${name_1} issues orders.`,
-                `The three fight independently, with ${name_2} retreating once defeat is apparent.`
+                `The three fight independently, with ${name_1} retreating once defeat is apparent.`
             ])
         }
         if (is_horde['top']) {
