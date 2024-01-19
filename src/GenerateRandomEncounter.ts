@@ -1,4 +1,4 @@
-import {Node, Link} from "./types"
+import {Node, Link, StringTypeDict} from "./types"
 import {calculate_encounter_xp} from "./helpers/xp_calculations";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
@@ -14,9 +14,8 @@ const default_config: GenerateEncounterConfig = {
     generate_mode: "random"
 }
 
-type StringTypeDict<T> = {[key:string]:T}
 
-export const GenerateRandomEncounterR =
+export const GenerateRandomEncounter =
     (graph:{nodes:Node[], links: Link[]}, monsters:string[], xp_lim:number, num:number,
      gamma:number=0.3, verbose=false, conf:GenerateEncounterConfig={}) =>
     {
@@ -29,7 +28,10 @@ export const GenerateRandomEncounterR =
             config.generate_mode = 'xp_unset'
         }
 
+        const min_xp = xp_lim === Number.POSITIVE_INFINITY ? 0 : xp_lim / 30
+
         if (verbose) console.group("GENERATING AN ENCOUNTER")
+        console.log("Chosen min xp as ", min_xp)
 
         // - ========: INFERRED LINKS :======== -
         // We want to use inferred links, from creatures
@@ -43,7 +45,6 @@ export const GenerateRandomEncounterR =
                 && tag_matches.indexOf(node) === -1)
             const type_matches = graph.nodes.filter(node => share_type(node, source, "boolean")
                     && tag_matches.indexOf(node) === -1 && lang_matches.indexOf(node) === -1) as Node[] //???? needed?
-
             // These will all later be augmented by adjusted_link_weight
             [...tag_matches, ...lang_matches, ...type_matches].forEach(match => {
                     links_to_ret.push({source:source, target:match, weight: 0.5} as Link)
@@ -51,6 +52,23 @@ export const GenerateRandomEncounterR =
             return links_to_ret
         }
 
+        const get_poor_quality_links = (source:Node) => {
+            const links_to_ret = [] as Link[]
+            console.log("Trying to find environment matches")
+            const environment_matches = graph.nodes.filter(node => share_type(node, source, "boolean"))
+            environment_matches.forEach(match => {
+                links_to_ret.push({source:source, target:match, weight: 1} as Link)
+            })
+
+            if (links_to_ret.length === 0) {
+                console.log("Still no matches, trying to match 'humanoid'")
+                const humanoid_matches = graph.nodes.filter(node => node.type_humanoid === 1 && source.type_humanoid === 1)
+                humanoid_matches.forEach(match => {
+                    links_to_ret.push({source:source, target:match, weight: 1} as Link)
+                })
+            }
+            return links_to_ret
+        }
 
         // - ========: CHOOSING THE MONSTERS :======== -
         // This is the part where we select the monsters
@@ -64,14 +82,13 @@ export const GenerateRandomEncounterR =
 
         // if there aren't any nodes supplied, we pick a source node at random
         if (nodes.length === 0) {
-            const valid_nodes = graph.nodes.filter(node => node.xp <= xp_lim && node.is_npc === 0)
+            const valid_nodes = graph.nodes.filter(node => node.xp <= xp_lim && node.is_npc === 0 && node.xp >= min_xp)
             const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
             if (verbose) console.log(`No base node; randomly chose ${random_choice}`)
             nodes.push(random_choice)
         }
         if (verbose) {
             console.log("Starting nodes: ", nodes)
-            console.log(monsters, nodes.length, monsters.length)
         }
 
         // Update the inferred links
@@ -108,7 +125,7 @@ export const GenerateRandomEncounterR =
                         return prev
                     }, [] as [Node, number][])
                 // Ignore any neighbors that would push us over the xp limit
-                const valid_neighbors = neighbors.filter(pair => {
+                const valid_neighbors = neighbors.filter(pair => pair[0].xp >= min_xp).filter(pair => {
                     const neighbor = pair[0]
                     const new_xp = calculate_encounter_xp(
                         [...nodes.map(node => [node.xp, 1] as [number, number]), [neighbor.xp, 1]]
@@ -136,17 +153,21 @@ export const GenerateRandomEncounterR =
             }
         }
 
+        // If we didn't set the XP, then we return the initially chosen monsters.
+        const encounter = nodes.reduce((p, n) => {
+            return {
+                ...p, [n.id]: 1
+            }
+        }, {} as StringTypeDict<number>)
+        if (config.generate_mode === 'xp_unset') return encounter
+
+
         // - ========: PREDICTING COMBAT COUNTS :======== -
         // We have the individual nodes; these will not be changing
         // We now want to populate the encounter up to the xp limit / down below the xp lim
 
         if (verbose) console.log("Chosen nodes:", nodes)
 
-        const encounter = nodes.reduce((p, n) => {
-            return {
-                ...p, [n.id]: 1
-            }
-        }, {} as StringTypeDict<number>)
         const combat_xps = nodes.map(node => node.xp)
         const combat_total_xp = combat_xps.reduce((p, n) => p + n, 0)
         const combat_min_xp = combat_xps.reduce((p, n) => Math.min(p, n), 0)

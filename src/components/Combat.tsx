@@ -13,7 +13,7 @@ import {
     getTypeAndTag
 } from "../helpers/monster_parsers";
 import {Difficulty, Link, Node} from "../types";
-import {GenerateRandomEncounterR} from "../GenerateRandomEncounter"
+import {GenerateRandomEncounter} from "../GenerateRandomEncounter"
 import {PlayerContext} from "../context/PlayerContext";
 
 type CombatProps = {
@@ -41,10 +41,13 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         // const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
         //     Object.keys(combat), calculatePartyXP(players)[selectedDifficulty], numMonsters)
         const monsters = Object.keys(combat)
-        const xp_lim = calculatePartyXP(players)[difficulty_increase(selectedDifficulty)]
-        const encounter = GenerateRandomEncounterR(graph, monsters, xp_lim, numMonsters,
+        const thresholds = calculatePartyXP(players)
+        const xp_min = thresholds[selectedDifficulty]
+        const xp_max = thresholds[difficulty_increase(selectedDifficulty)]
+        const xp_lim = xp_max
+        console.log(xp_lim)
+        const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters,
             undefined, true)
-        console.log(calculatePartyXP(players))
         setCombat(encounter)
     }
 
@@ -55,6 +58,30 @@ export default function Combat({graph, graphNodes}:CombatProps) {
 
     const clearEncounter = () => {
         setCombat({})
+    }
+
+    const get_xp_section = () => {
+        const xp = calculateEncounterXP(combat, Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Node]).reduce(
+                (p, n) => {
+                    return {
+                        ...p,
+                        [n[0]]: CR_TO_XP[+n[1].cr]
+                    }
+                }, {}
+        ))
+        const thresholds = calculatePartyXP(players)
+        let diff_string = ""
+        if (thresholds['absurd'] !== 0) {
+            if (xp < thresholds['easy']) diff_string = '(Trivial)'
+            else if (xp < thresholds['medium']) diff_string = '(Easy)'
+            else if (xp < thresholds['hard']) diff_string = '(Medium)'
+            else if (xp < thresholds['deadly']) diff_string = '(Hard)'
+            else if (xp < thresholds['absurd']) diff_string = '(Deadly)'
+            else diff_string = '(Absurd)'
+        }
+        return <h6>
+            Total: {xp} XP {diff_string}
+        </h6>
     }
 
     return <div className="container mb-1 d-flex flex-column">
@@ -80,19 +107,7 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         </div>
         <div className="row">
             <div className="col">
-                <h6>
-                    Total: {calculateEncounterXP(
-                    combat,
-                    Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Node]).reduce(
-                        (p, n) => {
-                            return {
-                                ...p,
-                                [n[0]]: CR_TO_XP[+n[1].cr]
-                            }
-                        }, {}
-                    )
-                )} XP
-                </h6>
+                {get_xp_section()}
             </div>
         </div>
         <div className="row">

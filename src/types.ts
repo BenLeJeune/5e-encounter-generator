@@ -77,3 +77,5 @@ export const MONSTER_ENVIRONMENTS = ["arctic" , "coastal" , "desert" , "forest" 
 export const MONSTER_LANGS = ['abyssal', 'aquan', 'auran', 'common', 'celestial', 'dwarvish', 'draconic',
 'deep speech', 'druidic', 'elvish', 'gnommish', 'giant', 'goblin', 'gith', 'halfling', 'infernal', 'ignan', 'orc', 'primordial', 'sylvan', 'terran',
 "thieves' cant", 'undercommon'] as Monster_Language[]
+
+export type StringTypeDict<T> = {[key:string]:T}

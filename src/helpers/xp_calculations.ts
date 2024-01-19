@@ -72,7 +72,22 @@ export const difficulty_increase = (difficulty:Difficulty) => {
         default:
             return "absurd"
     }
-
+}
+export const difficulty_decrease = (difficulty:Difficulty) => {
+    switch (difficulty) {
+        case "trivial":
+        case "easy":
+            return "trivial"
+        case "medium":
+            return "easy"
+        case "hard":
+            return "medium"
+        case "deadly":
+            return "hard"
+        case "absurd":
+        default:
+            return "deadly"
+    }
 }
 
 const XP_DAILY = [

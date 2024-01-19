@@ -64,7 +64,7 @@ export default function Graph({graph, all_nodes}:GraphProps) {
         const col = document.getElementById("graph-column")
         if (col) {
             const {width, height} = col.getBoundingClientRect()
-            const dims = {width: width - 2, height: height - 2}
+            const dims = {width: width - 12, height: height - 12}
             setDimensions(dims)
         }
     }

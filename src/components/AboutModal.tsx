@@ -36,6 +36,7 @@ export default function AboutModal() {
                         <h6>How to use?</h6>
                         <p>Pick your players' levels, select a difficulty, and click generate! You can add monsters
                         from the bestiary that you want to be in the encounter.</p>
+                        <p>EnGen will then generate some encounter suggestions, including location, tactics, and alternate objectives.</p>
                         <h6>Where did the data come from?</h6>
                         The data was originally gathered for <a href="https://github.com/zhudotexe/FIREBALL?tab=readme-ov-file"
                            target="_blank" rel="noopener noreferrer">training an LLM

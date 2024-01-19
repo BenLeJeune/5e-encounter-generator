@@ -1,5 +1,5 @@
 #graph-column {
-  padding: 0;
+  padding: 5px;
   min-height: 50vh;
 }
 
@@ -19,6 +19,11 @@
   display:inline-block;
 }
 
+#graph-column canvas {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1em
+}
+
 div#root {
   height:100vh;
   width:100vw;
@@ -30,6 +35,14 @@ div#borderRow {
 
 body {
   overflow-x: hidden
+}
+
+::selection {
+  background: #0d6efd;
+}
+
+::-moz-selection {
+  background: #0d6efd;
 }
 
  /*Medium devices (tablets, 768px and up)*/
@@ -45,6 +58,9 @@ div.mobileOnly {
     max-height: 400px;
     position: relative !important;
     overflow-y: auto;
+  }
+  div.responsive-fill-block.suggestion {
+    max-height: 600px
   }
   nav#bestiaryPagination {
     margin-left: 1rem !important;
