@@ -141,12 +141,11 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
         >click here for more.</span>
         </p>
 
-        <div className="row flex-grow-1 position-relative">
+        <div className="col flex-grow-1 position-relative">
             <div  style={{padding: '0 calc(var(--bs-gutter-x) * .5)'}}
                   className="position-absolute overflow-x-hidden overflow-y-auto p-0 d-flex flex-column responsive-fill-block h-100 w-100 suggestion">
 
 
-            <div className="col flex-grow-1 overflow-y-scroll position-relative">
 
                 <Card title={strategy.title} subtitle="Strategy" locked={stratLocked} lockedCallback={() => setStratLocked(p=>!p)}
                       body={strategy.text} buttonName="Different Strategy" callback={randomiseStrategy}/>
@@ -160,7 +159,7 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
                       subtitle="Objective" body={objective.description} buttonName="New Objective"
                       callback={randomiseObjective}/>
 
-            </div>
+                <div className="w-100 my-5 mobileOnly"/>
         </div>
     </div>
     </>
@@ -171,7 +170,7 @@ export const Card = (props:{
     title: string, subtitle?:string, body: string, buttonName?:string, callback?:()=>void,
     locked:boolean, lockedCallback:() => void
 }) => {
-    return <div className="card mb-2 mx-1">
+    return <div className="card mb-2">
         <div className="card-body">
             <h5 className="card-title text-capitalize">
                 {props.title}
