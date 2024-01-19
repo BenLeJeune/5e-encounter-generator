@@ -35,7 +35,7 @@ export default function Graph({graph, all_nodes}:GraphProps) {
             // We add links with the tag "predicted" for any shared tags
             let isolated = Object.keys(combat).filter(monster_name => valid_nodes.indexOf(monster_name) === -1)
             isolated.forEach(monster_1 => {
-                [...valid_nodes, ...isolated].filter(mon => mon !== monster_1)
+                [...Object.keys(combat)].filter(mon => mon !== monster_1)
                     .forEach(monster_2 => {
                         const [mon_1, mon_2] = [all_nodes[monster_1], all_nodes[monster_2]]
                         if (share_tag(mon_1, mon_2, "boolean")) {
@@ -62,18 +62,12 @@ export default function Graph({graph, all_nodes}:GraphProps) {
         const fg = fgRef.current as any
 
         fg.d3Force('center', null)
-        fg.d3Force('charge', d3.forceManyBody())
+        fg.d3Force('charge', d3.forceManyBody().strength(-50))
         fg.d3Force('x', d3.forceX())
         fg.d3Force('y', d3.forceY())
 
         return () => window.removeEventListener("resize", handle_resize)
     }, [])
-
-    useEffect(() => {
-        if (fgRef.current) {
-            (fgRef.current as any).zoomToFit(400)
-        }
-    }, [graph])
 
     const handle_resize = () => {
         const col = document.getElementById("graph-column")
@@ -94,7 +88,7 @@ export default function Graph({graph, all_nodes}:GraphProps) {
             linkColor={link => link.target.id in combat && link.source.id in combat? "#0d6efd" : "#6c757d"}
             linkWidth={link => link.target.id in combat && link.source.id in combat? 3 : 1}
             linkLineDash={link => "type" in link ? [5, 5] : []}
-            nodeLabel={node => toTitleCase((node as any)['id'])}
+            nodeLabel={node => toTitleCase((node as any)['id']) + ` (CR ${node.cr})`}
             nodeVal={node => node.id in combat ? 1.5 : 1}
             graphData={currentGraphData()}
     />

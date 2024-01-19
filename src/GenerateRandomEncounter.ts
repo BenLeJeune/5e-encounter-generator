@@ -10,19 +10,20 @@ type GenerateEncounterConfig = Partial<{
     // Different modes of generation
     generate_mode : "random" | "xp_unset"
 }>
-const default_config: GenerateEncounterConfig = {
-    generate_mode: "random"
-}
-
 
 export const GenerateRandomEncounter =
     (graph:{nodes:Node[], links: Link[]}, monsters:string[], xp_lim:number, num:number,
      gamma:number=0.3, verbose=false, conf:GenerateEncounterConfig={}) =>
     {
+        const default_config: GenerateEncounterConfig = {
+            generate_mode: "random"
+        }
+
         const config = Object.assign(default_config, conf)
         const all_nodes = graph.nodes.reduce((p, n) => {
             return {...p, [n.id]: n}
         }, {} as StringTypeDict<Node>)
+
         if (xp_lim === 0) {
             xp_lim = Number.POSITIVE_INFINITY
             config.generate_mode = 'xp_unset'
@@ -86,8 +87,9 @@ export const GenerateRandomEncounter =
             const max_xp = (xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp)
             const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
             const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
-            if (verbose) console.log(`No base node; randomly chose ${random_choice}`)
-            nodes.push(random_choice)
+            if (verbose) console.log(`No base node; randomly chose`, random_choice)
+            if (random_choice) nodes.push(random_choice)
+            else alert("Random selection failed for some reason. If you're on desktop, the logs are in the developer console.")
         }
         if (verbose) {
             console.log("Starting nodes: ", nodes)
@@ -154,7 +156,8 @@ export const GenerateRandomEncounter =
                 const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
                 const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
                 console.log("Randomly selected", random_choice)
-                nodes.push(random_choice)
+                if (random_choice) nodes.push(random_choice)
+                else console.log("Random choice failed.")
             }
             else {
                 const choice_id = weightedRandomChoice(weights) as string

@@ -37,7 +37,7 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
 
     // Whenever we update the location, pick a random hazard from that location
     useEffect(() => {
-        randomiseHazard(true)
+        if (!hazLocked) randomiseHazard(true)
     }, [location])
 
     // Whenever combat changes, we want to see if our predicted environment changes

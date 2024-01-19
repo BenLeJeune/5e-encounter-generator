@@ -28,11 +28,6 @@ export const encounter_classifier = (encounter:StringTypeDict<number>, all_nodes
     const mid_name = format_list(mid_level_monsters.map(node => encounter[node.id] === 1 ? node.id : plural(node.id)))
     const low_name = format_list(low_level_monsters.map(node => encounter[node.id] === 1 ? node.id : plural(node.id)))
 
-
-    console.log("Top level:", top_level_monsters)
-    console.log("Mid level:", mid_level_monsters)
-    console.log("Low level:", low_level_monsters)
-
     let strategy = {
         title: "Strategy",
         text: top_name
@@ -374,8 +369,6 @@ export const encounter_classifier = (encounter:StringTypeDict<number>, all_nodes
 
     if (generic_strategies_list.length > 0) strategy.text += " " + random_from_list(generic_strategies_list)
 
-
-    console.log(top_level_count)
 
     return strategy
 

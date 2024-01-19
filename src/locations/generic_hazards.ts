@@ -53,7 +53,7 @@ export const generic_hazards = {
     ],
     "grassland": [
         "At initiative count 20, a sudden gust of wind blows across the open grassland. Ranged attacks have disadvantage, as the wind veers them off course.",
-        "After a creature finished moving, they disturb a nest of burrowing mites, which attack the creature.",
+        "After a creature finishes moving, they disturb a nest of burrowing mites, which attack the creature.",
         "When a creature attacks, the vibrations may attract a stampede of herbivores, requiring Dexterity saving throws to avoid being trampled and taking bludgeoning damage.",
         "At the end of a player's turn, if they moved more than 5 feet, hidden sinkholes may collapse, requiring Dexterity saving throws to avoid falling.",
         "If a creature casts a spell, the residual magic may disturb the local fauna, causing them to become aggressive and attack.",
