@@ -1,12 +1,11 @@
-import React, {useContext} from 'react';
-import {MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES, StringTypeDict} from "../types";
+import React, {useContext, useEffect} from 'react';
+import {MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES} from "../types";
 import {capitalise} from "../helpers/misc_helpers";
 import Select from 'react-select'
 import {FiltersContext} from "../context/FiltersContext";
+import {getTrackBackground, Range} from "react-range";
+import {clamp_cr, CRs} from "../helpers/xp_calculations";
 
-type FilterModal_Props = {
-
-}
 
 const toSelectOptions = (opts: string[]) => opts ? opts.reduce((p, n) => [
     ...p, {
@@ -15,9 +14,7 @@ const toSelectOptions = (opts: string[]) => opts ? opts.reduce((p, n) => [
     }
 ], [] as {value:string, label:string}[]) : undefined
 
-const type_options = toSelectOptions(MONSTER_TYPES)
-
-export default function FilterModal(props: FilterModal_Props) {
+export default function FilterModal() {
 
     return  <div className="modal modal-lg fade" id="filterModal" tabIndex={-1} aria-labelledby="exampleModalLabel"
                  aria-hidden="true">
@@ -41,6 +38,13 @@ export default function FilterModal(props: FilterModal_Props) {
                         <div className="col">
                             <h6>Filter by Environment</h6>
                             <FiltersMultiSelect key={'envs'} options={MONSTER_ENVIRONMENTS}/>
+                        </div>
+                    </div>
+
+                    <div className="row mb-4">
+                        <h6>Filter by CR</h6>
+                        <div className="col d-flex align-items-center mx-3">
+                            <CrRange/>
                         </div>
                     </div>
 
@@ -95,5 +99,68 @@ function FiltersMultiSelect({key, options}: MultiSelectProps) {
                 }
             }
         }}
+    />
+}
+
+function CrRange() {
+
+    const [filters, setFilters] = useContext(FiltersContext)
+
+    return <Range
+        onChange={values => setFilters(prev => {
+            return { ...prev,
+                crMin: CRs[values[0]],
+                crMax: CRs[values[1]]
+            }
+        })}
+        min={0} max={CRs.length - 1} step={1}
+        values={[CRs.indexOf(filters.crMin), CRs.indexOf(filters.crMax)]}
+        renderTrack={({ props, children }) => (
+            <div
+                onMouseDown={props.onMouseDown}
+                onTouchStart={props.onTouchStart}
+                style={{
+                    ...props.style,
+                    height: '36px',
+                    display: 'flex',
+                    width: '100%'
+                }}
+            >
+                <div
+                    ref={props.ref}
+                    style={{
+                        height: '5px',
+                        width: '100%',
+                        borderRadius: '4px',
+                        background: getTrackBackground({
+                            values: [CRs.indexOf(filters.crMin), CRs.indexOf(filters.crMax)],
+                            colors: ['#ccc', '#0d6efd', '#ccc'],
+                            min: 0,
+                            max: CRs.length - 1
+                        }),
+                        alignSelf: 'center'
+                    }}
+                >
+                    {children}
+                </div>
+            </div>
+        )}
+        renderThumb={({ index, props }) => (
+            <div
+                {...props}
+                style={{
+                    ...props.style,
+                    height: '1em',
+                    width: '1em',
+                    borderRadius: '1em',
+                    border: '0.25rem solid #0d6efd',
+                    backgroundColor: 'rgb(222, 226, 230)'
+                }}
+            >
+                <div className="position-absolute mt-3 text-secondary start-50 translate-middle-x">
+                    {index === 0 ? filters.crMin : filters.crMax}
+                </div>
+            </div>
+        )}
     />
 }

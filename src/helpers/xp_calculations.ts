@@ -186,3 +186,32 @@ export const calculate_encounter_xp = (xp_num_pairs:[number, number][]) => {
 
     return total_xp * multiplier
 }
+
+export const CRs = Object.keys(CR_TO_XP).map(cr => Number(cr)).sort((a, b) => a - b)
+
+
+export const clamp_cr = (cr:number) => {
+
+    if (cr > 30) return 30
+    if (cr < 0) return 0
+
+    let i = 0
+    while (cr > CRs[i] && i < CRs.length) {
+        i += 1
+    }
+    // If we exceeded the XP limit, we clamp to 30
+    if (cr > CRs[i]) return 30
+
+    // If we can, compare the diff and return the nearest
+    if (i > 0 && i < CRs.length) {
+        let below = CRs[i - 1]
+        let above = CRs[i]
+
+        let below_diff = Math.abs(below - cr)
+        let above_diff = Math.abs(above - cr)
+        if (above_diff <= below_diff) return above
+        else return below
+    }
+
+    return 0
+}
