@@ -17,27 +17,24 @@ import Papa from "papaparse";
 import AboutModal from "./components/AboutModal";
 import SuggestionsInfo from "./components/SuggestionsInfo";
 import Suggestions from "./components/Suggestions";
+import {FiltersContext, Filters, DEFAULT_FILTERS} from "./context/FiltersContext";
 
 function App() {
 
     const playerState = useState<PlayerData[]>([{level:undefined, num:undefined}])
     const combatState = useState<{[key:string]:number}>({})
+    const filterState = useState<Filters>(DEFAULT_FILTERS)
 
     const [graphData, setGraphData] = useState<{nodes:Node[], links:Link[]}|undefined>(undefined)
-    const [monsterStats, setMonsterStats] = useState<MonsterData[]>([])
-
     const [graphNodes, setGraphNodes] = useState<string[]>([])
 
     useEffect(() => {
+        // --- :: ---
+        // FETCHING THE GRAPH DATA
+        // --- :: ---
         const getGraph = async() => {
             const graph_data = await fetch(varUrl('data/detailed_graph.json'))
             return await graph_data.json() as {nodes:Node[], links:Link[]}
-        }
-
-
-        const getMonsterStats = async () => {
-            const monsterStats = await fetch(varUrl('data/monster_data.csv'))
-            return monsterStats.text()
         }
 
         getGraph().then(graph => {
@@ -47,15 +44,12 @@ function App() {
                 return {...p, [n.id]: n}
             }, {} as {[key:string]:Node})
         })
-
-        getMonsterStats().then(monsterStats => {
-            const monsterStatsObj = Papa.parse(monsterStats, {header:true}).data
-            setMonsterStats((monsterStatsObj as MonsterData[]).slice(0, -1))
-        })
     }, [])
 
     const all_nodes_ref = useRef<{[key:string]:Node}>({})
 
+    // Shows the 'about' modal
+    // for some reason this has to here, otherwise it's weird
     const showModal = (e:React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault()
         const modalEl = document.getElementById("aboutModal")
@@ -67,27 +61,28 @@ function App() {
 
 
     return  <>
-        <AboutModal/>
-        <SuggestionsInfo/>
+    <AboutModal/>
+    <SuggestionsInfo/>
     <PlayerContext.Provider value={playerState}>
         <CombatContext.Provider value={combatState}>
-          <div className="container-fluid">
-              <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-                  <a href="/5e-encounter-generator"
-                     className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                      <img src={GraphLogo} alt="EnGen logo" style={{height: "3rem"}} className="mx-2"/>
-                      <span className="fs-4 fw-bold">EnGen</span>
-                  </a>
-                  <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-                      <li>
-                          <a onClick={e => showModal(e)} style={{cursor:"pointer"}} className="nav-link px-2 link-secondary">About EnGen</a>
-                      </li>
-                      <li>
-                          <a href="/" className="nav-link px-2 link-secondary">About Me</a>
-                      </li>
-                  </ul>
-              </header>
-          </div>
+        <FiltersContext.Provider value={filterState}>
+              <div className="container-fluid">
+                  <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+                      <a href="/5e-encounter-generator"
+                         className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+                          <img src={GraphLogo} alt="EnGen logo" style={{height: "3rem"}} className="mx-2"/>
+                          <span className="fs-4 fw-bold">EnGen</span>
+                      </a>
+                      <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                          <li>
+                              <a onClick={e => showModal(e)} style={{cursor:"pointer"}} className="nav-link px-2 link-secondary">About EnGen</a>
+                          </li>
+                          <li>
+                              <a href="/" className="nav-link px-2 link-secondary">About Me</a>
+                          </li>
+                      </ul>
+                  </header>
+              </div>
             <div className="container-xxl flex-grow-1 mb-3">
                 <div id="borderRow" className="row">
                     <div className="col-md-4 d-flex flex-column">
@@ -116,6 +111,7 @@ function App() {
                     </div>
                 </div>
             </div>
+        </FiltersContext.Provider>
         </CombatContext.Provider>
     </PlayerContext.Provider>
     </>

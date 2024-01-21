@@ -4,33 +4,20 @@ import {Link, Monster, MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES, Node} 
 import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
 import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
 import {PlusCircle} from "iconoir-react";
-import {varUrl} from "../helpers/misc_helpers";
+import {capitalise, varUrl} from "../helpers/misc_helpers";
 import {count} from "d3";
 import {CombatContext} from "../context/CombatContext";
+import FilterModal from "./FilterModal";
 
 type Bestiary_Props = {
     bestiary: Node[],
     graphNodes:string[]
 }
 
-const filterDefaults = (b:boolean) => {
-    return {
-        types: MONSTER_TYPES.reduce((p, t) => {
-            return {
-                ...p, [t]: b
-            }
-        }, {} as { [key: string]: boolean }),
-        tags: MONSTER_TAGS.reduce((p, tag) => {
-            return {
-                ...p, [tag]: b
-            }
-        }, {} as { [key: string]: boolean }),
-        envs: MONSTER_ENVIRONMENTS.reduce((p, env) => {
-            return {
-                ...p, [env]: b
-            }
-        }, {} as { [key: string]: boolean })
-    }
+const filterDefaults = {
+    types: [] as string[],
+    tags: [] as string[],
+    envs: [] as string[]
 }
 
 export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
@@ -49,16 +36,6 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
         const s = e.target.value
         if (bestiary) {
             const filtered = bestiary.filter(m => m.id.indexOf(s) !== -1)
-                // .filter(
-                //     m => {
-                //         const t = getMonsterType(m)
-                //         const tags = getMonsterTag(m)
-                //         const envs = getMonsterEnvironments(m)
-                //         return filters.types[t] &&
-                //             (envs.length === 0 || envs.reduce((prev, env) => prev || filters.envs[env], false))
-                //             && (tags.length === 0 || tags.reduce((prev, tag) => prev || filters.tags[tag], false))
-                //     }
-                // )
             setNumResults(filtered.length)
             const next_max_pages = Math.ceil(filtered.length / pageLength)
             if ( next_max_pages < currentPage) {
@@ -133,21 +110,22 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
     //
     /// --==: Filters :==--
     //
-    //const [filters, setFilters] = useState(filterDefaults(true))
+    const [filters, setFilters] = useState(filterDefaults)
 
     return bestiary ? <>
+        <FilterModal/>
             <div className="container mb-1 d-flex flex-column" style={{minHeight: "300px"}}>
         <div className="row">
             <div className="col">
                 <h4>Bestiary</h4>
                 <hr/>
             </div>
-            {/*<div className="col-auto">*/}
-            {/*    <button type="button" className="btn btn-outline-secondary" data-bs-toggle="modal"*/}
-            {/*            data-bs-target="#filterModal">*/}
-            {/*        Filters*/}
-            {/*    </button>*/}
-            {/*</div>*/}
+            <div className="col-auto">
+                <button type="button" className="btn btn-outline-secondary" data-bs-toggle="modal"
+                        data-bs-target="#filterModal">
+                    Filters
+                </button>
+            </div>
             <div className="col-auto">
                     <input type="text" value={searchTerm} onChange={handleSearch} className="form-control" id="monsterSearch" placeholder="Monster Name"/>
             </div>
@@ -178,97 +156,6 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
             </ul>
         </nav>
         </div>
-
-        {/*<div className="modal modal-lg fade" id="filterModal" tabIndex={-1} aria-labelledby="exampleModalLabel"*/}
-        {/*     aria-hidden="true">*/}
-        {/*    <div className="modal-dialog modal-dialog-centered">*/}
-        {/*        <div className="modal-content">*/}
-        {/*            <div className="modal-header">*/}
-        {/*                <h5 className="modal-title" id="exampleModalLabel">Filter the Bestiary</h5>*/}
-        {/*                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>*/}
-        {/*            </div>*/}
-        {/*            <div className="modal-body">*/}
-        {/*                <h6>Filter by Type</h6>*/}
-        {/*                {*/}
-        {/*                    MONSTER_TYPES.map(*/}
-        {/*                        t => <>*/}
-        {/*                            <input type="checkbox" checked={filters.types[t]} className="btn-check" key={`type-check-${t}`}*/}
-        {/*                                   onChange={() => setFilters(prev => {*/}
-        {/*                                       return {*/}
-        {/*                                           ...prev,*/}
-        {/*                                           types: {...prev.types, [t]: !prev.types[t]}*/}
-        {/*                                       }*/}
-        {/*                                   })}*/}
-        {/*                                   id={`type-check-${t}`} autoComplete="off"/>*/}
-        {/*                            <label className="btn btn-outline-primary m-1 text-capitalize" key={`type-check-${t}-label`}*/}
-        {/*                                   htmlFor={`type-check-${t}`}>*/}
-        {/*                                {t}*/}
-        {/*                            </label>*/}
-        {/*                        </>*/}
-        {/*                    )*/}
-        {/*                }*/}
-        {/*                <button type="button" className="btn btn-outline-secondary m-1"*/}
-        {/*                        onClick={() => setFilters(prev => {return {...prev, types: filterDefaults(true).types}})}>All</button>*/}
-        {/*                <button type="button" className="btn btn-outline-danger m-1"*/}
-        {/*                        onClick={() => setFilters(prev => {return {...prev, types: filterDefaults(false).types}})}>None</button>*/}
-        {/*                <hr className="mx-4"/>*/}
-        {/*                <h6>Filter by Tag</h6>*/}
-        {/*                {*/}
-        {/*                    MONSTER_TAGS.map(*/}
-        {/*                        tag => <>*/}
-        {/*                            <input type="checkbox" checked={filters.tags[tag]} className="btn-check" key={`tag-check-${tag}`}*/}
-        {/*                                   onChange={() => setFilters(prev => {*/}
-        {/*                                       return {*/}
-        {/*                                           ...prev,*/}
-        {/*                                           tags: {...prev.tags, [tag]: !prev.tags[tag]}*/}
-        {/*                                       }*/}
-        {/*                                   })}*/}
-        {/*                                   id={`tag-check-${tag}`} autoComplete="off"/>*/}
-        {/*                            <label className="btn btn-outline-primary m-1 text-capitalize" key={`tag-check-${tag}-label`}*/}
-        {/*                                   htmlFor={`tag-check-${tag}`}>*/}
-        {/*                                {tag}*/}
-        {/*                            </label>*/}
-        {/*                        </>*/}
-        {/*                    )*/}
-        {/*                }*/}
-        {/*                <button type="button" className="btn btn-outline-secondary m-1"*/}
-        {/*                        onClick={() => setFilters(prev => {return {...prev, tags: filterDefaults(true).tags}})}>All</button>*/}
-        {/*                <button type="button" className="btn btn-outline-danger m-1"*/}
-        {/*                        onClick={() => setFilters(prev => {return {...prev, tags: filterDefaults(false).tags}})}>None</button>*/}
-        {/*                <hr className="mx-4"/>*/}
-        {/*                <h6>Filter by Environment</h6>*/}
-        {/*                {*/}
-        {/*                    MONSTER_ENVIRONMENTS.map(*/}
-        {/*                        env => <>*/}
-        {/*                            <input type="checkbox" checked={filters.envs[env]} className="btn-check" key={`env-check-${env}`}*/}
-        {/*                                   onChange={() => setFilters(prev => {*/}
-        {/*                                       return {*/}
-        {/*                                           ...prev,*/}
-        {/*                                           envs: {...prev.envs, [env]: !prev.envs[env]}*/}
-        {/*                                       }*/}
-        {/*                                   })}*/}
-        {/*                                   id={`env-check-${env}`} autoComplete="off"/>*/}
-        {/*                            <label className="btn btn-outline-primary m-1 text-capitalize" key={`env-check-${env}-label`}*/}
-        {/*                                   htmlFor={`env-check-${env}`}>*/}
-        {/*                                {env}*/}
-        {/*                            </label>*/}
-        {/*                        </>*/}
-        {/*                    )*/}
-        {/*                }*/}
-        {/*                <button type="button" className="btn btn-outline-secondary m-1"*/}
-        {/*                        onClick={() => setFilters(prev => {return {...prev, envs: filterDefaults(true).envs}})}>All</button>*/}
-        {/*                <button type="button" className="btn btn-outline-danger m-1"*/}
-        {/*                        onClick={() => setFilters(prev => {return {...prev, envs: filterDefaults(false).envs}})}>None</button>*/}
-
-        {/*            </div>*/}
-        {/*            <div className="modal-footer">*/}
-        {/*                <button type="button" className="btn btn-outline-danger"*/}
-        {/*                        onClick={() => setFilters(filterDefaults(true))}>Reset</button>*/}
-        {/*                <button type="button" className="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>*/}
-        {/*            </div>*/}
-        {/*        </div>*/}
-        {/*    </div>*/}
-        {/*</div>*/}
         </>
      : null
 }

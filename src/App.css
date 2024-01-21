@@ -19,6 +19,15 @@
   display:inline-block;
 }
 
+.mv-remove-colours {
+  background-color: #0d6efd;
+  transition: background-color 0.2s ease
+}
+
+.mv-remove-colours:hover {
+  background-color: #dc3545 !important
+}
+
 /*#graph-column canvas {*/
 /*  border: 1px solid rgba(255, 255, 255, 0.15);*/
 /*  border-radius: 1em*/
