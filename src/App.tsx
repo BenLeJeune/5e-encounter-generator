@@ -1,7 +1,17 @@
 import React, {useEffect, useRef, useState} from 'react';
 import './App.css';
 import PlayersManager from "./components/PlayersManager";
-import {Link, Monster, MonsterData, Node, PlayerData} from "./types";
+import {
+    Link,
+    Monster,
+    Monster_Environment_Key,
+    Monster_Tag_Key,
+    MONSTER_TAGS,
+    Monster_Type_Key,
+    MonsterData,
+    Node,
+    PlayerData
+} from "./types";
 import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext} from "./context/CombatContext";
 import Graph from "./components/Graph";
@@ -18,6 +28,7 @@ import AboutModal from "./components/AboutModal";
 import SuggestionsInfo from "./components/SuggestionsInfo";
 import Suggestions from "./components/Suggestions";
 import {FiltersContext, Filters, DEFAULT_FILTERS} from "./context/FiltersContext";
+import {filter_nodes} from "./helpers/filter_utils";
 
 function App() {
 
@@ -27,6 +38,19 @@ function App() {
 
     const [graphData, setGraphData] = useState<{nodes:Node[], links:Link[]}|undefined>(undefined)
     const [graphNodes, setGraphNodes] = useState<string[]>([])
+
+    const [filteredNodes, setFilteredNodes] = useState<Node[]>([])
+
+
+    useEffect(() => {
+        if (graphData) {
+            filter_nodes<Monster_Type_Key>(graphData.nodes, filterState[0].types, 'type_')
+                .then(nodes => filter_nodes<Monster_Tag_Key>(nodes, filterState[0].tags, 'tag_'))
+                .then(nodes => filter_nodes<Monster_Environment_Key>(nodes, filterState[0].envs, 'environment_'))
+                .then(nodes => nodes.filter(node => node.cr >= filterState[0].crMin && node.cr <= filterState[0].crMax))
+                .then(setFilteredNodes)
+        }
+    }, [filterState[0], graphData])
 
     useEffect(() => {
         // --- :: ---
@@ -91,7 +115,7 @@ function App() {
                             <hr className="my-4"/>
                         </div>
                         <div className="row flex-grow-1">
-                            {graphData ? <Bestiary bestiary={graphData.nodes} graphNodes={graphNodes}/> : <></>}
+                            {graphData ? <Bestiary bestiary={filteredNodes} graphNodes={graphNodes}/> : <></>}
                         </div>
                     </div>
                     <div className="col-md-5 d-flex flex-column">

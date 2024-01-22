@@ -4,7 +4,7 @@ import {capitalise} from "../helpers/misc_helpers";
 import Select from 'react-select'
 import {FiltersContext} from "../context/FiltersContext";
 import {getTrackBackground, Range} from "react-range";
-import {clamp_cr, CRs} from "../helpers/xp_calculations";
+import {CRs, parseCr} from "../helpers/xp_calculations";
 
 
 const toSelectOptions = (opts: string[]) => opts ? opts.reduce((p, n) => [
@@ -15,6 +15,8 @@ const toSelectOptions = (opts: string[]) => opts ? opts.reduce((p, n) => [
 ], [] as {value:string, label:string}[]) : undefined
 
 export default function FilterModal() {
+
+    const [filters, setFilters] = useContext(FiltersContext)
 
     return  <div className="modal modal-lg fade" id="filterModal" tabIndex={-1} aria-labelledby="exampleModalLabel"
                  aria-hidden="true">
@@ -27,17 +29,17 @@ export default function FilterModal() {
                 <div className="modal-body">
                     <div className="row mb-4">
                         <h6>Filter by Type</h6>
-                        <FiltersMultiSelect key={'types'} options={MONSTER_TYPES}/>
+                        <FiltersMultiSelect filter_key='types' options={MONSTER_TYPES}/>
                     </div>
 
                     <div className="row mb-4">
                         <div className="col">
                             <h6>Filter by Tag</h6>
-                            <FiltersMultiSelect key={'tags'} options={MONSTER_TAGS}/>
+                            <FiltersMultiSelect filter_key='tags' options={MONSTER_TAGS}/>
                         </div>
                         <div className="col">
                             <h6>Filter by Environment</h6>
-                            <FiltersMultiSelect key={'envs'} options={MONSTER_ENVIRONMENTS}/>
+                            <FiltersMultiSelect filter_key='envs' options={MONSTER_ENVIRONMENTS}/>
                         </div>
                     </div>
 
@@ -49,7 +51,14 @@ export default function FilterModal() {
                     </div>
 
                     <div className="form-check form-switch">
-                        <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"/>
+                        <input onChange={() => setFilters(prev => ({
+                            ...prev,
+                            config: {
+                                ...prev.config,
+                                affectGenerator: !prev.config.affectGenerator
+                            }
+                        }))}
+                            checked={filters.config.affectGenerator} className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"/>
                         <label className="form-check-label text-muted" htmlFor="flexSwitchCheckDefault">
                             Apply to Encounter Generator as well as bestiary
                         </label>
@@ -66,19 +75,19 @@ export default function FilterModal() {
 }
 
 type MultiSelectProps = {
-    key: 'types' | 'tags' | 'envs',
+    filter_key: 'types' | 'tags' | 'envs',
     options: string[]
 }
-function FiltersMultiSelect({key, options}: MultiSelectProps) {
+function FiltersMultiSelect({filter_key, options}: MultiSelectProps) {
 
     const [filters, setFilters] = useContext(FiltersContext)
 
     return <Select
-        defaultValue={toSelectOptions(filters[key])}
+        defaultValue={toSelectOptions(filters[filter_key])}
         onChange={new_types => setFilters(prev => {
             return {
                 ...prev,
-                [key]: new_types.map(obj => obj.value)
+                [filter_key]: new_types.map(obj => obj.value)
             }
         })}
         options={toSelectOptions(options)} isMulti
@@ -157,8 +166,8 @@ function CrRange() {
                     backgroundColor: 'rgb(222, 226, 230)'
                 }}
             >
-                <div className="position-absolute mt-3 text-secondary start-50 translate-middle-x">
-                    {index === 0 ? filters.crMin : filters.crMax}
+                <div className="position-absolute mt-3 text-muted start-50 translate-middle-x">
+                    {index === 0 ? parseCr(String(filters.crMin)) : parseCr(String(filters.crMax))}
                 </div>
             </div>
         )}
