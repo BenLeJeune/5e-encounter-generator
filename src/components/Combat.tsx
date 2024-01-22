@@ -15,6 +15,7 @@ import {
 import {Difficulty, Link, Node} from "../types";
 import {GenerateRandomEncounter} from "../GenerateRandomEncounter"
 import {PlayerContext} from "../context/PlayerContext";
+import {FiltersContext} from "../context/FiltersContext";
 
 type CombatProps = {
     graph: {
@@ -31,6 +32,8 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         else return matches[0]
     }
 
+    const [filters] = useContext(FiltersContext)
+
     const [combat, setCombat] = useContext(CombatContext)
     const [numMonsters, setNumMonsters] = useState(3)
 
@@ -46,8 +49,18 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         const xp_max = thresholds[difficulty_increase(selectedDifficulty)]
         const xp_lim = xp_max
         console.log(xp_lim)
+        let config = filters.config.affectGenerator ? {
+            filters: {
+                types: filters.types,
+                tags: filters.tags,
+                envs: filters.envs,
+                crMin: filters.crMin,
+                crMax: filters.crMax
+            }
+        } : {}
+        console.log("Supplying configs:", config)
         const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters,
-            undefined, true)
+            undefined, true, config)
         setCombat(encounter)
     }
 

@@ -1,22 +1,37 @@
-import {Node, Link, StringTypeDict} from "./types"
+import {Node, Link, StringTypeDict, Monster_Type_Key, Monster_Tag_Key, Monster_Environment_Key} from "./types"
 import {calculate_encounter_xp, xp_multiplier} from "./helpers/xp_calculations";
 import {weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
+import {filter_node, filter_nodes} from "./helpers/filter_utils";
 
 // - ========: TITLE :======== -
 
-type GenerateEncounterConfig = Partial<{
+type GenerateEncounterConfig = {
     // Different modes of generation
-    generate_mode : "random" | "xp_unset"
-}>
+    generate_mode : "random" | "xp_unset",
+    filters: {
+        tags:string[],
+        types:string[],
+        envs:string[],
+        crMin:number,
+        crMax:number
+    }
+}
 
 export const GenerateRandomEncounter =
     (graph:{nodes:Node[], links: Link[]}, monsters:string[], xp_lim:number, num:number,
-     gamma:number=0.3, verbose=false, conf:GenerateEncounterConfig={}) =>
+     gamma:number=0.3, verbose=false, conf:Partial<GenerateEncounterConfig>={}) =>
     {
         const default_config: GenerateEncounterConfig = {
-            generate_mode: "random"
+            generate_mode: "random",
+            filters: {
+                tags: [],
+                types: [],
+                envs: [],
+                crMin: 0,
+                crMax: 30
+            }
         }
 
         const config = Object.assign(default_config, conf)
@@ -86,6 +101,9 @@ export const GenerateRandomEncounter =
         if (nodes.length === 0) {
             const max_xp = (xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp)
             const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
+                .filter(node => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
+                .filter(node => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
+                .filter(node => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
             const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
             if (verbose) console.log(`No base node; randomly chose`, random_choice)
             if (random_choice) nodes.push(random_choice)
@@ -133,13 +151,21 @@ export const GenerateRandomEncounter =
                         return prev
                     }, [] as [Node, number][])
                 // Ignore any neighbors that would push us over the xp limit
-                const valid_neighbors = neighbors.filter(pair => pair[0].xp >= min_xp && pair[0].xp <= max_xp).filter(pair => {
+                let valid_neighbors = neighbors.filter(pair => pair[0].xp >= min_xp && pair[0].xp <= max_xp).filter(pair => {
                     const neighbor = pair[0]
                     const new_xp = calculate_encounter_xp(
                         [...nodes.map(node => [node.xp, 1] as [number, number]), [neighbor.xp, 1]]
                     )
                     return new_xp < xp_lim
-                })
+                }).filter(([node]) => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
+                    .filter(([node]) => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
+                    .filter(([node]) => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
+
+                if (verbose) {
+                    console.log("Applied filters:", config.filters)
+                    console.log("Nodes remaining after filters:", valid_neighbors)
+                }
+
                 // We add the relative weights
                 const total_weight = valid_neighbors.reduce((prev, [_, weight]) => prev + weight, 0)
                 valid_neighbors.forEach(([neighbor, weight]) => {
