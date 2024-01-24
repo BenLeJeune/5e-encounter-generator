@@ -11,7 +11,8 @@ import FilterModal from "./FilterModal";
 
 type Bestiary_Props = {
     bestiary: Node[],
-    graphNodes:string[]
+    graphNodes:string[],
+    all_nodes: Node[]
 }
 
 const filterDefaults = {
@@ -20,9 +21,10 @@ const filterDefaults = {
     envs: [] as string[]
 }
 
-export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
+export default function Bestiary({bestiary, graphNodes, all_nodes}: Bestiary_Props) {
 
     //const [bestiary, setBestiary] = useState<Monster[]>()
+    // TODO: pagination broken
 
     const [searchTerm, setSearchTerm] = useState<string>('')
 
@@ -31,6 +33,9 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
     const [numResults, setNumResults] = useState<number>(() => bestiary.length)
     const [pageLength, setPageLength] = useState<number>(25)
     const [buttonsOffset, setButtonsOffset] = useState<number>(0)
+
+    const [noResultsText, setNoResultsText] = useState<string>("No results :(")
+
     const handleSearch = (e:React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
         const s = e.target.value
@@ -42,9 +47,28 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
                 setCurrentPage( Math.max(next_max_pages, 1) )
             }
             setButtonsOffset(prev => Math.max(Math.min(prev, next_max_pages - 1), 0))
+
+            const all_nodes_filtered = all_nodes.filter(m => m.id.indexOf(s) !== -1)
+            console.log("All nodes filtered:", all_nodes_filtered)
+            if (all_nodes_filtered.length > 0) setNoResultsText("Results found in all monsters. Try different filters.")
+            else setNoResultsText("No results :(")
         }
         setSearchTerm(s)
     }
+
+    useEffect(() => {
+        if (bestiary) {
+            const filtered = bestiary.filter(m => m.id.indexOf(searchTerm) !== -1)
+            setNumResults(filtered.length)
+            const next_max_pages = Math.ceil(filtered.length / pageLength)
+            if ( next_max_pages < currentPage) {
+                setCurrentPage( Math.max(next_max_pages, 1) )
+            }
+            setButtonsOffset(prev => Math.max(Math.min(prev, next_max_pages - 1), 0))
+        }
+    }, [bestiary])
+
+
 
     useLayoutEffect(() => {
         window.addEventListener('resize', calculatePageLinksNum)
@@ -102,15 +126,10 @@ export default function Bestiary({bestiary, graphNodes}: Bestiary_Props) {
                     </>
                 )
             }
-            else return <p className="text-center text-muted mt-3">No results :(</p>
+            else return <p className="text-center text-muted mt-3">{noResultsText}</p>
         }
         else return <p>Loading</p>
     }
-
-    //
-    /// --==: Filters :==--
-    //
-    const [filters, setFilters] = useState(filterDefaults)
 
     return bestiary ? <>
         <FilterModal/>

@@ -30,7 +30,7 @@ export const encounter_classifier = (encounter:StringTypeDict<number>, all_nodes
 
     let strategy = {
         title: "Strategy",
-        text: top_name
+        text: ""
     }
 
     const size_lookup = (k:number) => {

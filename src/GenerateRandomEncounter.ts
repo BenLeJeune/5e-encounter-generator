@@ -1,6 +1,6 @@
 import {Node, Link, StringTypeDict, Monster_Type_Key, Monster_Tag_Key, Monster_Environment_Key} from "./types"
-import {calculate_encounter_xp, xp_multiplier} from "./helpers/xp_calculations";
-import {weightedRandomChoice} from "./helpers/misc_helpers";
+import {calculate_encounter_xp, CR_TO_XP, xp_multiplier} from "./helpers/xp_calculations";
+import {random_from_list, weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
 import {filter_node, filter_nodes} from "./helpers/filter_utils";
@@ -44,11 +44,16 @@ export const GenerateRandomEncounter =
             config.generate_mode = 'xp_unset'
         }
 
-        const min_xp = xp_lim === Number.POSITIVE_INFINITY ? 0 : xp_lim / 30
+        let min_xp = xp_lim === Number.POSITIVE_INFINITY ? 0 : xp_lim / 30
+        if (config.filters.crMin !== 0) {
+            min_xp = CR_TO_XP[config.filters.crMin]
+        }
 
-        if (verbose) console.group("GENERATING AN ENCOUNTER")
-        console.log("Config", config)
-        console.log("Chosen min xp as ", min_xp)
+        if (verbose) {
+            console.group("GENERATING AN ENCOUNTER")
+            console.log("Config", config)
+            console.log("Chosen min xp as ", min_xp)
+        }
 
         // - ========: INFERRED LINKS :======== -
         // We want to use inferred links, from creatures
@@ -99,15 +104,23 @@ export const GenerateRandomEncounter =
 
         // if there aren't any nodes supplied, we pick a source node at random
         if (nodes.length === 0) {
-            const max_xp = (xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp)
+            const max_xp = Math.min((xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp), CR_TO_XP[config.filters.crMax])
             const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
+            const filtered_nodes = valid_nodes
                 .filter(node => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
                 .filter(node => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
                 .filter(node => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
-            const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
+                .filter(node => node.cr > config.filters.crMin && node.cr < config.filters.crMax)
+            if (verbose) console.log("Nodes remaining after filter:")
+            const random_choice = random_from_list(filtered_nodes)
             if (verbose) console.log(`No base node; randomly chose`, random_choice)
             if (random_choice) nodes.push(random_choice)
-            else alert("Random selection failed for some reason. If you're on desktop, the logs are in the developer console.")
+            else {
+                if (verbose) console.log('No nodes available for initial choice after filters - choosing one at random.')
+                const new_random_choice = random_from_list(valid_nodes)
+                nodes.push(new_random_choice)
+                alert("Filters too restrictive, random monster chosen.")
+            }
         }
         if (verbose) {
             console.log("Starting nodes: ", nodes)
@@ -128,8 +141,11 @@ export const GenerateRandomEncounter =
         for (let i = 0; i < num - starting_len; i++) {
             let weights = {} as StringTypeDict<number>
             // The max monster xp we can get away with adding.
-            const max_xp = (xp_lim / xp_multiplier(num)) - nodes.reduce((p, n) => n.xp + p, 0) - ((num - 1 - nodes.length) * min_xp)
+            let max_xp = (xp_lim / xp_multiplier(num)) - nodes.reduce((p, n) => n.xp + p, 0) - ((num - 1 - nodes.length) * min_xp)
+            max_xp = Math.min(max_xp, CR_TO_XP[config.filters.crMax])
+            if (max_xp < min_xp) min_xp = 0
             if (verbose) console.log("Max xp to add at next step:", max_xp)
+
             const already_chosen_ids = nodes.map(node => node.id)
             if (verbose) console.log("Already chosen so far: ", already_chosen_ids)
             // For each node, we search for neighbors
@@ -180,7 +196,7 @@ export const GenerateRandomEncounter =
                 const max_xp = (xp_lim / xp_multiplier(num)) - nodes.reduce((p, n) => n.xp + p, 0) - ((num - 1 - nodes.length) * min_xp)
 
                 const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
-                const random_choice = valid_nodes[Math.floor(Math.random() * valid_nodes.length)]
+                const random_choice = random_from_list(valid_nodes)
                 console.log("Randomly selected", random_choice)
                 if (random_choice) nodes.push(random_choice)
                 else console.log("Random choice failed.")

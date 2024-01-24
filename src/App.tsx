@@ -28,7 +28,7 @@ import AboutModal from "./components/AboutModal";
 import SuggestionsInfo from "./components/SuggestionsInfo";
 import Suggestions from "./components/Suggestions";
 import {FiltersContext, Filters, DEFAULT_FILTERS} from "./context/FiltersContext";
-import {filter_nodes} from "./helpers/filter_utils";
+import {filter_node, filter_nodes} from "./helpers/filter_utils";
 
 function App() {
 
@@ -62,11 +62,19 @@ function App() {
         }
 
         getGraph().then(graph => {
+            // @ts-ignore
+            window.graph = graph
+            // @ts-ignore
+            window.filterNode = filter_node
+            // @ts-ignore
+            window.filterNodes = filter_nodes
             setGraphData(graph)
             setGraphNodes((graph.nodes as {id:string}[]).map(n => n.id))
             all_nodes_ref.current = (graph.nodes as Node[]).reduce((p, n) => {
                 return {...p, [n.id]: n}
             }, {} as {[key:string]:Node})
+            // @ts-ignore
+            window.all_nodes = all_nodes_ref.current
         })
     }, [])
 
@@ -115,7 +123,7 @@ function App() {
                             <hr className="my-4"/>
                         </div>
                         <div className="row flex-grow-1">
-                            {graphData ? <Bestiary bestiary={filteredNodes} graphNodes={graphNodes}/> : <></>}
+                            {graphData ? <Bestiary bestiary={filteredNodes} all_nodes={graphData.nodes} graphNodes={graphNodes}/> : <></>}
                         </div>
                     </div>
                     <div className="col-md-5 d-flex flex-column">

@@ -17,5 +17,5 @@ export const filter_node = <T extends keyof Node>(node: Node, match: string[], p
         .reduce((p, n) => {
             if (or) return p || n
             else return p && n
-    })
+        })
 }
