@@ -1,6 +1,6 @@
 #graph-column {
   padding: 5px;
-  min-height: 50vh;
+  min-height: 35vh;
 }
 
 .cursor-pointer {
@@ -26,6 +26,10 @@
 
 .mv-remove-colours:hover {
   background-color: #dc3545 !important
+}
+
+.bestiaryNoOutline {
+  margin: 1px
 }
 
 /*#graph-column canvas {*/

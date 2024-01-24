@@ -7,6 +7,7 @@ import {Monster_Environment, Monster_Environment_Key, MONSTER_ENVIRONMENTS, Node
 import {Lock, LockSlash} from 'iconoir-react'
 import {generate_objective, generic_alternative_objectives} from "../strategies/alternative_objectives";
 import {encounter_classifier} from "../strategies/encounter_classifier";
+import {combat_counts} from "../helpers/monster_helpers";
 
 type Suggestions_Props = {
     all_nodes: {[key:string]:Node}
@@ -24,8 +25,10 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
 
     const [hazard, setHazard] = useState<string>('')
     const [hazardType, setHazardType] = useState<"generic"|"location specific">("generic")
-    const [strategy, setStrategy] = useState<{"title":string, "text": string}>(() => encounter_classifier(combat, all_nodes))
-    const [objective, setObjective] = useState<{"title":string, "description": string}>(() => generate_objective(combat, all_nodes))
+    const [strategy, setStrategy] = useState<{"title":string, "text": string}>
+    (() => encounter_classifier(combat_counts(combat), all_nodes))
+    const [objective, setObjective] = useState<{"title":string, "description": string}>
+    (() => generate_objective(combat_counts(combat), all_nodes))
 
     const randomiseLocation = (env_to_use=environment) => {
         const env_locations = locations[env_to_use]
@@ -89,14 +92,14 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
         }
 
         if (!stratLocked) {
-            const strat = encounter_classifier(combat, all_nodes)
+            const strat = encounter_classifier(combat_counts(combat), all_nodes)
             setStrategy(strat)
         }
 
-        if (!objLocked) setObjective(generate_objective(combat, all_nodes))
+        if (!objLocked) setObjective(generate_objective(combat_counts(combat), all_nodes))
 
 
-        encounter_classifier(combat, all_nodes)
+        encounter_classifier(combat_counts(combat), all_nodes)
     }, [combat])
 
     const randomiseHazard = (location_specific:boolean=false) => {
@@ -117,7 +120,7 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
     }
 
     const randomiseStrategy = () => {
-        setStrategy(encounter_classifier(combat, all_nodes))
+        setStrategy(encounter_classifier(combat_counts(combat), all_nodes))
     }
 
     return Object.keys(combat).length === 0 ?

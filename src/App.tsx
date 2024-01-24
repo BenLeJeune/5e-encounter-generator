@@ -10,10 +10,10 @@ import {
     Monster_Type_Key,
     MonsterData,
     Node,
-    PlayerData
+    PlayerData, StringTypeDict
 } from "./types";
 import {PlayerContext} from "./context/PlayerContext";
-import {CombatContext} from "./context/CombatContext";
+import {CombatContext, CombatEntry} from "./context/CombatContext";
 import Graph from "./components/Graph";
 import GraphLogo from './svg/GraphLogo.svg'
 import {Modal} from 'bootstrap';
@@ -33,7 +33,7 @@ import {filter_node, filter_nodes} from "./helpers/filter_utils";
 function App() {
 
     const playerState = useState<PlayerData[]>([{level:undefined, num:undefined}])
-    const combatState = useState<{[key:string]:number}>({})
+    const combatState = useState<StringTypeDict<CombatEntry>>({})
     const filterState = useState<Filters>(DEFAULT_FILTERS)
 
     const [graphData, setGraphData] = useState<{nodes:Node[], links:Link[]}|undefined>(undefined)

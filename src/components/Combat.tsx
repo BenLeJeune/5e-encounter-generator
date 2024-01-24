@@ -16,6 +16,8 @@ import {Difficulty, Link, Node} from "../types";
 import {GenerateRandomEncounter} from "../GenerateRandomEncounter"
 import {PlayerContext} from "../context/PlayerContext";
 import {FiltersContext} from "../context/FiltersContext";
+import {combat_counts} from "../helpers/monster_helpers";
+import {Lock, LockSlash} from "iconoir-react";
 
 type CombatProps = {
     graph: {
@@ -44,6 +46,7 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         // const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
         //     Object.keys(combat), calculatePartyXP(players)[selectedDifficulty], numMonsters)
         const monsters = Object.keys(combat)
+        const locked_monsters = monsters.filter(mon => combat[mon].locked)
         const thresholds = calculatePartyXP(players)
         const xp_min = thresholds[selectedDifficulty]
         const xp_max = thresholds[difficulty_increase(selectedDifficulty)]
@@ -59,7 +62,7 @@ export default function Combat({graph, graphNodes}:CombatProps) {
             }
         } : {}
         console.log("Supplying configs:", config)
-        const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters,
+        const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters, locked_monsters,
             undefined, true, config)
         setCombat(encounter)
     }
@@ -74,13 +77,13 @@ export default function Combat({graph, graphNodes}:CombatProps) {
     }
 
     const get_xp_section = () => {
-        const xp = calculateEncounterXP(combat, Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Node]).reduce(
-                (p, n) => {
-                    return {
+        const xp = calculateEncounterXP(combat_counts(combat),
+            Object.keys(combat).map(mon => [mon, monsterLookup(mon)] as [string, Node])
+                .reduce(
+                    (p, n) => ({
                         ...p,
                         [n[0]]: CR_TO_XP[+n[1].cr]
-                    }
-                }, {}
+                    }), {}
         ))
         const thresholds = calculatePartyXP(players)
         let diff_string = ""
@@ -175,15 +178,30 @@ export function CombatRow({monster, in_graph}:CombatRowProps) {
 
     const handleChange = (i:number) => (e:React.MouseEvent) => {
         e.preventDefault()
-        let new_count = combat[monster.id] + i
+        let new_count = combat[monster.id].count + i
         if (new_count === 0) setCombat(prevState => {
             const {[monster.id]: current, ...rest} = prevState
             return rest
         })
-        else setCombat(prevState => {return {...prevState, [monster.id]: new_count as number}})
+        else setCombat(prevState => ({
+            ...prevState,
+            [monster.id]: {
+                locked: false,
+                count: new_count as number
+            }
+        }))
     }
 
-    return <div className="row mt-2">
+    const toggleLocked = () => setCombat(prevState => ({
+        ...prevState,
+        [monster.id]: {
+            locked: !prevState[monster.id].locked,
+            count: prevState[monster.id].count
+        }
+    }))
+
+
+    return <div className={`row mt-1 p-1 bestiaryRow ${combat[monster.id].locked ? 'bestiaryNoOutline' : 'bg-body-secondary'}`}>
         <div className="col">
             <h6 className="text-capitalize">
                 {monster.id} ({monster.source})
@@ -201,9 +219,12 @@ export function CombatRow({monster, in_graph}:CombatRowProps) {
             </p>
         </div>
         <div className="col-auto justify-content-end align-items-center d-flex">
+            <button className="btn opacity-25" onClick={toggleLocked}>
+                {combat[monster.id].locked ? <Lock/> : <LockSlash/>}
+            </button>
             <div className="input-group">
                 <button type="button" onClick={handleChange(-1)} className="btn btn-outline-secondary">-</button>
-                <div className="input-group-text" id="btnGroupAddon">{combat[monster.id]}</div>
+                <div className="input-group-text" id="btnGroupAddon">{combat[monster.id].count}</div>
                 <button type="button" onClick={handleChange(1)} className="btn btn-outline-secondary">+</button>
             </div>
         </div>

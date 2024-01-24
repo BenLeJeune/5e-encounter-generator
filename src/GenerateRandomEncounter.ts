@@ -4,6 +4,7 @@ import {random_from_list, weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
 import {filter_node, filter_nodes} from "./helpers/filter_utils";
+import {CombatEntry} from "./context/CombatContext";
 
 // - ========: TITLE :======== -
 
@@ -20,7 +21,7 @@ type GenerateEncounterConfig = {
 }
 
 export const GenerateRandomEncounter =
-    (graph:{nodes:Node[], links: Link[]}, monsters:string[], xp_lim:number, num:number,
+    (graph:{nodes:Node[], links: Link[]}, monsters:string[], xp_lim:number, num:number, locked_monsters:string[],
      gamma:number=0.3, verbose=false, conf:Partial<GenerateEncounterConfig>={}) =>
     {
         const default_config: GenerateEncounterConfig = {
@@ -96,7 +97,8 @@ export const GenerateRandomEncounter =
         // This is the part where we select the monsters
 
         // The supplied monsters
-        const nodes = monsters.map(monster_name => all_nodes[monster_name])
+        // We replace all non-locked monsters.
+        const nodes = monsters.map(monster_name => all_nodes[monster_name]).filter(m => locked_monsters.indexOf(m.id) !== -1)
         if (nodes.length !== monsters.length) {
             console.log("Nodes length & monster length mismatch!")
             if (verbose) console.log(nodes, monsters)
@@ -216,7 +218,7 @@ export const GenerateRandomEncounter =
                 ...p, [n.id]: 1
             }
         }, {} as StringTypeDict<number>)
-        if (config.generate_mode === 'xp_unset') return encounter
+        if (config.generate_mode === 'xp_unset') return formatEncounter(encounter, locked_monsters)
 
 
         // - ========: PREDICTING COMBAT COUNTS :======== -
@@ -319,7 +321,8 @@ export const GenerateRandomEncounter =
 
         if (verbose) console.groupEnd()
 
-        return encounter
+        // Format in the form of 'count' and 'locked'
+        return formatEncounter(encounter, locked_monsters)
 }
 
 const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) => {
@@ -336,3 +339,13 @@ const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) =>
 
     return weight
 }
+
+const formatEncounter = (encounter: StringTypeDict<number>, locked_monsters:string[]) => Object.keys(encounter).reduce(
+    (prev, key) => ({
+        ...prev,
+        [key]: {
+            count: encounter[key],
+            locked: locked_monsters.indexOf(key) !== -1
+        }
+    }), {} as StringTypeDict<CombatEntry>
+)

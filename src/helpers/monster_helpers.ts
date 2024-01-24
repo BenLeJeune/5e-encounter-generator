@@ -6,8 +6,9 @@ import {
     Monster_Type,
     Monster_Type_Key,
     MONSTER_TYPES,
-    Node
+    Node, StringTypeDict
 } from "../types";
+import {CombatEntry} from "../context/CombatContext";
 
 // export const share_language = (mon_1:Node, mon_2:Node, mode:"count"|"boolean", include_common=false) => {
 //     if (mode === "boolean") {
@@ -67,3 +68,5 @@ export const share_environment = (mon_1:Node, mon_2:Node, mode:"count"|"boolean"
     generic_share_property<Monster_Environment, Monster_Environment_Key>
     (mon_1, mon_2, mode, MONSTER_ENVIRONMENTS, 'environment')
 
+export const combat_counts = (encounter: StringTypeDict<CombatEntry>) => Object.keys(encounter)
+    .reduce((prev, key) => ({...prev, [key]: encounter[key].count}), {})

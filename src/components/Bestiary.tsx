@@ -192,10 +192,10 @@ export function BestiaryRow({monster, in_graph}:BestiaryRowProps) {
         const m = monster.id
         setCombat(combat => {
             let prev_amount = 0
-            if (m in combat) prev_amount = combat[m]
+            if (m in combat) prev_amount = combat[m].count
             return {
                 ...combat,
-                [m]: prev_amount + 1
+                [m]: {locked: true, count: prev_amount +1}
             }
         })
     }
