@@ -15,12 +15,6 @@ type Bestiary_Props = {
     all_nodes: Node[]
 }
 
-const filterDefaults = {
-    types: [] as string[],
-    tags: [] as string[],
-    envs: [] as string[]
-}
-
 export default function Bestiary({bestiary, graphNodes, all_nodes}: Bestiary_Props) {
 
     //const [bestiary, setBestiary] = useState<Monster[]>()

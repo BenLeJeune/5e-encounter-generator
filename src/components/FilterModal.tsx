@@ -2,7 +2,7 @@ import React, {useContext, useEffect} from 'react';
 import {MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES} from "../types";
 import {capitalise} from "../helpers/misc_helpers";
 import Select from 'react-select'
-import {FiltersContext} from "../context/FiltersContext";
+import {DEFAULT_FILTERS, FiltersContext} from "../context/FiltersContext";
 import {getTrackBackground, Range} from "react-range";
 import {CRs, parseCr} from "../helpers/xp_calculations";
 
@@ -17,6 +17,8 @@ const toSelectOptions = (opts: string[]) => opts ? opts.reduce((p, n) => [
 export default function FilterModal() {
 
     const [filters, setFilters] = useContext(FiltersContext)
+
+    const resetFilters = () => setFilters(DEFAULT_FILTERS)
 
     return  <div className="modal modal-lg fade" id="filterModal" tabIndex={-1} aria-labelledby="exampleModalLabel"
                  aria-hidden="true">
@@ -66,7 +68,7 @@ export default function FilterModal() {
 
                 </div>
                 <div className="modal-footer">
-                    <button type="button" className="btn btn-outline-danger">Reset</button>
+                    <button type="button" className="btn btn-outline-danger" onClick={resetFilters}>Reset</button>
                     <button type="button" className="btn btn-outline-primary" data-bs-dismiss="modal">Save</button>
                 </div>
             </div>
@@ -83,6 +85,7 @@ function FiltersMultiSelect({filter_key, options}: MultiSelectProps) {
     const [filters, setFilters] = useContext(FiltersContext)
 
     return <Select
+        value={toSelectOptions(filters[filter_key])}
         defaultValue={toSelectOptions(filters[filter_key])}
         onChange={new_types => setFilters(prev => {
             return {
