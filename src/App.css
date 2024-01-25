@@ -32,6 +32,10 @@
   margin: 1px
 }
 
+img#UserJourney {
+  width: 80%
+}
+
 /*#graph-column canvas {*/
 /*  border: 1px solid rgba(255, 255, 255, 0.15);*/
 /*  border-radius: 1em*/

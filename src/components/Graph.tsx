@@ -78,6 +78,13 @@ export default function Graph({graph, all_nodes}:GraphProps) {
         }
     }
 
+    useEffect(() => {
+        // Whenever we change the nodes in the graph, we want to focus on them.
+        if (fgRef.current) {
+            setTimeout(() =>(fgRef.current as any).zoomToFit(400), 500)
+        }
+    }, [combat])
+
     const fgRef = useRef()
 
     return <ForceGraph2D

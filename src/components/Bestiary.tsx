@@ -8,6 +8,7 @@ import {capitalise, varUrl} from "../helpers/misc_helpers";
 import {count} from "d3";
 import {CombatContext} from "../context/CombatContext";
 import FilterModal from "./FilterModal";
+import {DEFAULT_FILTERS, FiltersContext} from "../context/FiltersContext";
 
 type Bestiary_Props = {
     bestiary: Node[],
@@ -29,6 +30,8 @@ export default function Bestiary({bestiary, graphNodes, all_nodes}: Bestiary_Pro
     const [buttonsOffset, setButtonsOffset] = useState<number>(0)
 
     const [noResultsText, setNoResultsText] = useState<string>("No results :(")
+
+    const filters = useContext(FiltersContext)[0]
 
     const handleSearch = (e:React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
@@ -61,8 +64,6 @@ export default function Bestiary({bestiary, graphNodes, all_nodes}: Bestiary_Pro
             setButtonsOffset(prev => Math.max(Math.min(prev, next_max_pages - 1), 0))
         }
     }, [bestiary])
-
-
 
     useLayoutEffect(() => {
         window.addEventListener('resize', calculatePageLinksNum)
@@ -115,8 +116,8 @@ export default function Bestiary({bestiary, graphNodes, all_nodes}: Bestiary_Pro
             if (filtered.length > 0) {
                 return filtered.map(monster =>
                     <>
-                        <BestiaryRow monster={monster} in_graph={graphNodes.indexOf(monster.id) !== -1}/>
-                        <hr className="mx-3"/>
+                        <BestiaryRow key={monster.id} monster={monster} in_graph={graphNodes.indexOf(monster.id) !== -1}/>
+                        <hr key={monster.id + "-divider"} className="mx-3"/>
                     </>
                 )
             }
@@ -134,7 +135,8 @@ export default function Bestiary({bestiary, graphNodes, all_nodes}: Bestiary_Pro
                 <hr/>
             </div>
             <div className="col-auto">
-                <button type="button" className="btn btn-outline-secondary" data-bs-toggle="modal"
+                <button type="button" data-bs-toggle="modal"
+                        className={`btn btn-${filters === DEFAULT_FILTERS ? 'outline-' : ''}secondary`}
                         data-bs-target="#filterModal">
                     Filters
                 </button>

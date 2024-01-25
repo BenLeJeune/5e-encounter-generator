@@ -15,6 +15,7 @@ type GenerateEncounterConfig = {
         tags:string[],
         types:string[],
         envs:string[],
+        sources:string[],
         crMin:number,
         crMax:number
     }
@@ -30,6 +31,7 @@ export const GenerateRandomEncounter =
                 tags: [],
                 types: [],
                 envs: [],
+                sources: [],
                 crMin: 0,
                 crMax: 30
             }
@@ -107,12 +109,13 @@ export const GenerateRandomEncounter =
         // if there aren't any nodes supplied, we pick a source node at random
         if (nodes.length === 0) {
             const max_xp = Math.min((xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp), CR_TO_XP[config.filters.crMax])
-            const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
+            const valid_nodes = graph.nodes.filter(node => node.xp < max_xp && node.is_npc === 0 && node.xp >= min_xp)
             const filtered_nodes = valid_nodes
                 .filter(node => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
                 .filter(node => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
                 .filter(node => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
                 .filter(node => node.cr > config.filters.crMin && node.cr < config.filters.crMax)
+                .filter(node => config.filters.sources.length === 0 || config.filters.sources.indexOf(node.source.toLowerCase()) !== -1)
             if (verbose) console.log("Nodes remaining after filter:")
             const random_choice = random_from_list(filtered_nodes)
             if (verbose) console.log(`No base node; randomly chose`, random_choice)
@@ -169,7 +172,7 @@ export const GenerateRandomEncounter =
                         return prev
                     }, [] as [Node, number][])
                 // Ignore any neighbors that would push us over the xp limit
-                let valid_neighbors = neighbors.filter(pair => pair[0].xp >= min_xp && pair[0].xp <= max_xp).filter(pair => {
+                let valid_neighbors = neighbors.filter(pair => pair[0].xp < max_xp).filter(pair => {
                     const neighbor = pair[0]
                     const new_xp = calculate_encounter_xp(
                         [...nodes.map(node => [node.xp, 1] as [number, number]), [neighbor.xp, 1]]
@@ -178,6 +181,18 @@ export const GenerateRandomEncounter =
                 }).filter(([node]) => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
                     .filter(([node]) => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
                     .filter(([node]) => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
+                    .filter(([node]) => config.filters.sources.length === 0 || config.filters.sources.indexOf(node.source.toLowerCase()) !== -1)
+
+                // If no monsters meet the min xp criteria, we don't use it.
+                let valid_neighbors_xp_min = valid_neighbors.filter(([node]) => node.xp >= min_xp)
+
+                if (valid_neighbors_xp_min.length > 0) {
+                    console.log("Found neighbors that meet the xp limit, using them:", valid_neighbors_xp_min)
+                    valid_neighbors = valid_neighbors_xp_min
+                }
+                else {
+                    if (verbose) console.log("No neighbors that met the xp limit, so we ignore them")
+                }
 
                 if (verbose) {
                     console.log("Applied filters:", config.filters)
@@ -197,7 +212,22 @@ export const GenerateRandomEncounter =
                 console.log("No matches at all - including inferred links. We pick an unrelated node at random")
                 const max_xp = (xp_lim / xp_multiplier(num)) - nodes.reduce((p, n) => n.xp + p, 0) - ((num - 1 - nodes.length) * min_xp)
 
-                const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
+                let valid_nodes = graph.nodes.filter(node => node.xp < max_xp && node.is_npc === 0 && node.xp >= min_xp)
+                let valid_nodes_filtered = valid_nodes
+                    .filter(node => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
+                    .filter(node => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
+                    .filter(node => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
+                    .filter(node => node.cr > config.filters.crMin && node.cr < config.filters.crMax)
+                    .filter(node => config.filters.sources.length === 0 || config.filters.sources.indexOf(node.source.toLowerCase()) !== -1)
+
+                if (valid_nodes_filtered.length > 0) {
+                    if (verbose) console.log("Found other (non connected) nodes that match criteria - selecting from those.")
+                    valid_nodes = valid_nodes_filtered
+                }
+                else {
+                    if (verbose) console.log("No nodes available that match all the criteria. Selecting randomly.")
+                }
+
                 const random_choice = random_from_list(valid_nodes)
                 console.log("Randomly selected", random_choice)
                 if (random_choice) nodes.push(random_choice)
@@ -264,7 +294,7 @@ export const GenerateRandomEncounter =
         let current_xp = calc_current_xp()
         if (verbose) console.log("Current XP:", current_xp)
 
-        if (current_xp > xp_lim + combat_min_xp) {
+        if (current_xp > xp_lim) {
             let mons_to_remove = Object.keys(encounter).filter(mon => encounter[mon] > 1)
             let weights_to_remove = mons_to_remove.reduce((prev, monster) => {
                 return {...prev, [monster]: predicted_fracs[monster]}
@@ -288,7 +318,7 @@ export const GenerateRandomEncounter =
         // - ========: (RE-) ADDING MONSTERS :======== -
         // If we are now below the XP limit, then we will try to re-add monsters, not exceeding the limit
 
-        if (xp_lim !== Number.POSITIVE_INFINITY && current_xp <= xp_lim - combat_min_xp) {
+        if (xp_lim !== Number.POSITIVE_INFINITY && current_xp < xp_lim - combat_min_xp) {
             const mons_full = [] as string[]
             let mons_to_add = Object.keys(encounter).filter(m => mons_full.indexOf(m) === -1)
             let weights_to_add = mons_to_add.reduce((prev, mon) => {

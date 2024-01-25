@@ -78,4 +78,10 @@ export const MONSTER_LANGS = ['abyssal', 'aquan', 'auran', 'common', 'celestial'
 'deep speech', 'druidic', 'elvish', 'gnommish', 'giant', 'goblin', 'gith', 'halfling', 'infernal', 'ignan', 'orc', 'primordial', 'sylvan', 'terran',
 "thieves' cant", 'undercommon'] as Monster_Language[]
 
+export const SOURCES = ['ai', 'awm', 'bam', 'bgdia', 'bgg', 'bmt', 'cm', 'cos', 'crcotn', 'dc', 'dip', 'dmg', 'dosi',
+    'dsotdq', 'egw', 'erlw', 'esk', 'ftd', 'ggr', 'ghloe', 'gos', 'hol', 'hotdq', 'idrotf', 'jttrc', 'kftgv', 'kkw',
+    'lmop', 'lox', 'mabjov', 'mismv1', 'mm', 'mot', 'mpmm', 'mpp', 'mtf', 'oota', 'oow', 'pabtso', 'phb', 'pota', 'rot',
+    'scc', 'sdw', 'skt', 'slw', 'tce', 'tdcsr', 'tftyp', 'toa', 'tofw', 'vd', 'vgm', 'vrgr', 'wbtw', 'wdh', 'wdmm', 'xge']
+
+
 export type StringTypeDict<T> = {[key:string]:T}

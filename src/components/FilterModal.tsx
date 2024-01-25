@@ -1,8 +1,8 @@
 import React, {useContext, useEffect} from 'react';
-import {MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES} from "../types";
+import {MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES, SOURCES} from "../types";
 import {capitalise} from "../helpers/misc_helpers";
 import Select from 'react-select'
-import {DEFAULT_FILTERS, FiltersContext} from "../context/FiltersContext";
+import {DEFAULT_FILTERS, Filters, FiltersContext} from "../context/FiltersContext";
 import {getTrackBackground, Range} from "react-range";
 import {CRs, parseCr} from "../helpers/xp_calculations";
 
@@ -34,15 +34,20 @@ export default function FilterModal() {
                         <FiltersMultiSelect filter_key='types' options={MONSTER_TYPES}/>
                     </div>
 
-                    <div className="row mb-4">
-                        <div className="col">
+                    <div className="row">
+                        <div className="col-md mb-4">
                             <h6>Filter by Tag</h6>
                             <FiltersMultiSelect filter_key='tags' options={MONSTER_TAGS}/>
                         </div>
-                        <div className="col">
+                        <div className="col-md mb-4">
                             <h6>Filter by Environment</h6>
                             <FiltersMultiSelect filter_key='envs' options={MONSTER_ENVIRONMENTS}/>
                         </div>
+                    </div>
+
+                    <div className="row mb-4">
+                        <h6>Filter by Source</h6>
+                        <FiltersMultiSelect filter_key='sources' options={SOURCES}/>
                     </div>
 
                     <div className="row mb-4">
@@ -51,6 +56,10 @@ export default function FilterModal() {
                             <CrRange/>
                         </div>
                     </div>
+
+                    <p className="opacity-25">
+                        Each filter uses 'or', combined using 'and'.
+                    </p>
 
                     <div className="form-check form-switch">
                         <input onChange={() => setFilters(prev => ({
@@ -77,7 +86,7 @@ export default function FilterModal() {
 }
 
 type MultiSelectProps = {
-    filter_key: 'types' | 'tags' | 'envs',
+    filter_key: keyof Filters,
     options: string[]
 }
 function FiltersMultiSelect({filter_key, options}: MultiSelectProps) {
@@ -85,8 +94,8 @@ function FiltersMultiSelect({filter_key, options}: MultiSelectProps) {
     const [filters, setFilters] = useContext(FiltersContext)
 
     return <Select
-        value={toSelectOptions(filters[filter_key])}
-        defaultValue={toSelectOptions(filters[filter_key])}
+        value={toSelectOptions(filters[filter_key] as string[])}
+        defaultValue={toSelectOptions(filters[filter_key] as string[])}
         onChange={new_types => setFilters(prev => {
             return {
                 ...prev,

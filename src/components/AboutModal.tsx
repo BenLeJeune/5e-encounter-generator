@@ -1,5 +1,6 @@
 import React, {useEffect, useLayoutEffect, useRef} from 'react';
 import {Modal} from 'bootstrap';
+import UserGuide from '../assets/UserGuideVertical.png'
 
 export default function AboutModal() {
 
@@ -21,7 +22,7 @@ export default function AboutModal() {
         }
     }
 
-    return <div className="modal modal-lg" id="aboutModal" tabIndex={-1} aria-labelledby="exampleModalLabel"
+    return <div className="modal fade modal-lg" id="aboutModal" tabIndex={-1} aria-labelledby="exampleModalLabel"
              aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
@@ -30,10 +31,10 @@ export default function AboutModal() {
                         <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div className="modal-body">
-                        <h6>What is it?</h6>
-                        <p>EnGen is a DnD 5e encounter builder. It works using a graph that connects
-                        monsters together - shown in the graph view.</p>
-                        <h6>How to use?</h6>
+                        <div className="d-flex w-100 justify-content-center align-content-center">
+                            <img src={UserGuide} alt="User journey" id="UserJourney"/>
+                        </div>
+                        <h6>How do I use EnGen?</h6>
                         <p>Pick your players' levels, select a difficulty, and click generate! You can add monsters
                         from the bestiary that you want to be in the encounter.</p>
                         <p>EnGen will then generate some encounter suggestions, including location, tactics, and alternate objectives.</p>

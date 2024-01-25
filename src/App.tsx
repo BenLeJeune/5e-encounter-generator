@@ -15,7 +15,7 @@ import {
 import {PlayerContext} from "./context/PlayerContext";
 import {CombatContext, CombatEntry} from "./context/CombatContext";
 import Graph from "./components/Graph";
-import GraphLogo from './svg/GraphLogo.svg'
+import GraphLogo from './assets/svg/GraphLogo.svg'
 import {Modal} from 'bootstrap';
 
 // Bootstrap CSS
@@ -48,6 +48,7 @@ function App() {
                 .then(nodes => filter_nodes<Monster_Tag_Key>(nodes, filterState[0].tags, 'tag_'))
                 .then(nodes => filter_nodes<Monster_Environment_Key>(nodes, filterState[0].envs, 'environment_'))
                 .then(nodes => nodes.filter(node => node.cr >= filterState[0].crMin && node.cr <= filterState[0].crMax))
+                .then(nodes => nodes.filter(node => filterState[0].sources.length === 0 || filterState[0].sources.indexOf(node.source.toLowerCase()) !== -1))
                 .then(setFilteredNodes)
         }
     }, [filterState[0], graphData])

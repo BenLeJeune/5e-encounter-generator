@@ -6,6 +6,7 @@ export type Filters = {
     envs: string[],
     crMin: number,
     crMax: number,
+    sources: string[],
     config: {
         affectGenerator: boolean
     }
@@ -22,6 +23,7 @@ export const DEFAULT_FILTERS = {
     envs: [],
     crMin: 0,
     crMax: 30,
+    sources: [],
     config: {
         affectGenerator: false
     }

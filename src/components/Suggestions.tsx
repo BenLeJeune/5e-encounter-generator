@@ -123,6 +123,19 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
         setStrategy(encounter_classifier(combat_counts(combat), all_nodes))
     }
 
+    const regenerateAll = () => {
+        if (!stratLocked) randomiseStrategy()
+        if (!locLocked) randomiseLocation() // also randomises hazard
+        if (!objLocked) randomiseObjective()
+    }
+
+    const lockAll = (b:boolean) => {
+        setStratLocked(b)
+        setLocLocked(b)
+        setHazLocked(b)
+        setObjLocked(b)
+    }
+
     return Object.keys(combat).length === 0 ?
         <>
         <h4>Encounter Suggestions</h4>
@@ -164,12 +177,27 @@ export default function Suggestions({all_nodes}: Suggestions_Props) {
                 <div className="w-100 my-5 mobileOnly"/>
         </div>
     </div>
+        <div className="row mb-1 pt-2">
+            <div className="col-auto">
+                <div className="input-group">
+                    <button className="btn btn-outline-primary" onClick={regenerateAll}>
+                        Regenerate
+                    </button>
+                    <button className="btn btn-outline-secondary" onClick={() => lockAll(false)}>
+                        Unlock
+                    </button>
+                    <button className="btn btn-outline-secondary" onClick={() => lockAll(true)}>
+                        Lock
+                    </button>
+                </div>
+            </div>
+        </div>
     </>
 }
 
 
 export const Card = (props:{
-    title: string, subtitle?:string, body: string, buttonName?:string, callback?:()=>void,
+    title: string, subtitle:string, body: string, buttonName:string, callback:()=>void,
     locked:boolean, lockedCallback:() => void
 }) => {
     return <div className="card mb-2">
@@ -181,15 +209,20 @@ export const Card = (props:{
                 </small>
             </h5>
             <p className="class-text mb-0">{props.body}</p>
-            {props.buttonName && props.callback ?
-                <button className="btn btn-outline-primary mt-2" onClick={() => (props.callback as () => {})()}>
-                    {props.buttonName}
-                </button> : null}
-            {<div className="position-absolute m-3 opacity-25" style={{bottom: 0, right: 0}}>
-                <button className="btn" onClick={props.lockedCallback}>
-                    {props.locked ? <Lock/> : <LockSlash/>}
-                </button>
-            </div>}
+            <div className="row d-flex mt-2">
+                <div className="col align-items-center">
+                    <button className="btn btn-outline-primary" onClick={() => (props.callback as () => {})()}>
+                        {props.buttonName}
+                    </button>
+                </div>
+                <div className="col-auto align-self-end p-0 opacity-25">
+                    <button className="btn" onClick={props.lockedCallback}>
+                        {props.locked ? <Lock/> : <LockSlash/>}
+                    </button>
+                </div>
+
+            </div>
+
         </div>
     </div>
 }

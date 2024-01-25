@@ -25,7 +25,7 @@ export default function PlayersManager() {
                     </div>
                 </div>
                 {
-                    playerData.map((d, i) => <LevelGroup index={i}/>)
+                    playerData.map((d, i) => <LevelGroup key={i} index={i}/>)
                 }
                 <button type='button' onClick={addLevelGroup} className="btn btn-outline-secondary">
                     Add New Level Group

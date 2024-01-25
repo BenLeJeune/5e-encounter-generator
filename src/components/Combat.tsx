@@ -57,6 +57,7 @@ export default function Combat({graph, graphNodes}:CombatProps) {
                 types: filters.types,
                 tags: filters.tags,
                 envs: filters.envs,
+                sources: filters.sources,
                 crMin: filters.crMin,
                 crMax: filters.crMax
             }
@@ -139,10 +140,9 @@ export default function Combat({graph, graphNodes}:CombatProps) {
                     </button>
                 </div>
             </div>
-            <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons">
 
-            </div>
-            <div className="col-md d-flex flex-column justify-content-center encounterButtons">
+
+            <div className="col-md d-flex py-1 flex-column justify-content-center encounterButtons">
                 <div className="input-group">
                     <select className="form-select"
                             value={selectedDifficulty}
@@ -150,7 +150,7 @@ export default function Combat({graph, graphNodes}:CombatProps) {
                     >
                         <option value="easy">Easy</option>
                         <option value="medium">Medium</option>
-                        <option selected value="hard">Hard</option>
+                        <option value="hard">Hard</option>
                         <option value="deadly">Deadly</option>
                     </select>
                     <input className="form-control" type="number" value={numMonsters} onChange={handleNumChange}/>
@@ -186,7 +186,7 @@ export function CombatRow({monster, in_graph}:CombatRowProps) {
         else setCombat(prevState => ({
             ...prevState,
             [monster.id]: {
-                locked: false,
+                locked: prevState[monster.id].locked,
                 count: new_count as number
             }
         }))
@@ -219,7 +219,7 @@ export function CombatRow({monster, in_graph}:CombatRowProps) {
             </p>
         </div>
         <div className="col-auto justify-content-end align-items-center d-flex">
-            <button className="btn opacity-25" onClick={toggleLocked}>
+            <button className="btn opacity-25 mx-1" onClick={toggleLocked}>
                 {combat[monster.id].locked ? <Lock/> : <LockSlash/>}
             </button>
             <div className="input-group">
