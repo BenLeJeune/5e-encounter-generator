@@ -3,7 +3,7 @@ import {calculate_encounter_xp, CR_TO_XP, xp_multiplier} from "./helpers/xp_calc
 import {random_from_list, weightedRandomChoice} from "./helpers/misc_helpers";
 import {score as PredictCount} from "./models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
-import {filter_node, filter_nodes} from "./helpers/filter_utils";
+import {filter_node} from "./helpers/filter_utils";
 import {CombatEntry} from "./context/CombatContext";
 
 // - ========: TITLE :======== -

@@ -1,11 +1,7 @@
 import React, {ReactElement, useContext, useEffect, useLayoutEffect, useState} from 'react';
-import Papa from "papaparse";
-import {Link, Monster, MONSTER_ENVIRONMENTS, MONSTER_TAGS, MONSTER_TYPES, Node} from "../types";
+import {Monster, Node} from "../types";
 import {CR_TO_XP, parseCr} from "../helpers/xp_calculations";
 import {getMonsterAlignment, getMonsterEnvironments, getMonsterTag, getMonsterType} from "../helpers/monster_parsers";
-import {PlusCircle} from "iconoir-react";
-import {capitalise, varUrl} from "../helpers/misc_helpers";
-import {count} from "d3";
 import {CombatContext} from "../context/CombatContext";
 import FilterModal from "./FilterModal";
 import {DEFAULT_FILTERS, FiltersContext} from "../context/FiltersContext";
