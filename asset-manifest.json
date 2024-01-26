@@ -1,16 +1,17 @@
 {
   "files": {
-    "main.css": "/5e-encounter-generator/static/css/main.33feed4d.css",
-    "main.js": "/5e-encounter-generator/static/js/main.e51c2a34.js",
+    "main.css": "/5e-encounter-generator/static/css/main.f2d12b23.css",
+    "main.js": "/5e-encounter-generator/static/js/main.83867f79.js",
     "static/js/787.30735c5b.chunk.js": "/5e-encounter-generator/static/js/787.30735c5b.chunk.js",
+    "static/media/UserGuideVertical.png": "/5e-encounter-generator/static/media/UserGuideVertical.e7be3d1282ee68e28c46.png",
     "static/media/GraphLogo.svg": "/5e-encounter-generator/static/media/GraphLogo.695856e8191d786ea492d30ac080b773.svg",
     "index.html": "/5e-encounter-generator/index.html",
-    "main.33feed4d.css.map": "/5e-encounter-generator/static/css/main.33feed4d.css.map",
-    "main.e51c2a34.js.map": "/5e-encounter-generator/static/js/main.e51c2a34.js.map",
+    "main.f2d12b23.css.map": "/5e-encounter-generator/static/css/main.f2d12b23.css.map",
+    "main.83867f79.js.map": "/5e-encounter-generator/static/js/main.83867f79.js.map",
     "787.30735c5b.chunk.js.map": "/5e-encounter-generator/static/js/787.30735c5b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.33feed4d.css",
-    "static/js/main.e51c2a34.js"
+    "static/css/main.f2d12b23.css",
+    "static/js/main.83867f79.js"
   ]
 }
