@@ -124,7 +124,7 @@ function App() {
                             <PlayersManager/>
                         </div>
                         <div className="row">
-                            {graphData ? <GenerateButtons graph={graphData}/> : <></>}
+                            {graphData ? <GenerateButtons all_nodes={all_nodes_ref.current} graph={graphData}/> : <></>}
                         </div>
                         <hr className="my-4"/>
                         <div className="row flex-grow-1">

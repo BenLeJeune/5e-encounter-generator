@@ -5,6 +5,7 @@ import {score as PredictCount} from "../models/CountPredictionModel";
 import {share_language, share_tag, share_type, share_environment} from "../helpers/monster_helpers";
 import {filter_node} from "../helpers/filter_utils";
 import {CombatEntry} from "../context/CombatContext";
+import {adjusted_link_weight, apply_filters, formatEncounter} from "./GenerationUtils";
 
 // - ========: TITLE :======== -
 
@@ -48,9 +49,12 @@ export const GenerateRandomEncounter =
         }
 
         let min_xp = xp_lim === Number.POSITIVE_INFINITY ? 0 : xp_lim / 30
+
         if (config.filters.crMin !== 0) {
-            min_xp = CR_TO_XP[config.filters.crMin]
+            min_xp = Math.min(CR_TO_XP[config.filters.crMin], min_xp)
         }
+
+        if (config.filters)
 
         if (verbose) {
             console.group("GENERATING AN ENCOUNTER")
@@ -108,15 +112,17 @@ export const GenerateRandomEncounter =
 
         // if there aren't any nodes supplied, we pick a source node at random
         if (nodes.length === 0) {
-            const max_xp = Math.min((xp_lim / xp_multiplier(num)) - ((num - 1) & min_xp), CR_TO_XP[config.filters.crMax])
-            const valid_nodes = graph.nodes.filter(node => node.xp < max_xp && node.is_npc === 0 && node.xp >= min_xp)
+            const max_xp = Math.min((xp_lim / xp_multiplier(num)) - ((num - 1) * min_xp), CR_TO_XP[config.filters.crMax])
+            if (verbose) console.log("Initial max XP:", max_xp)
+            const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
+            if (verbose) console.log("Valid nodes:", valid_nodes)
             const filtered_nodes = valid_nodes
                 .filter(node => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
                 .filter(node => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
                 .filter(node => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
-                .filter(node => node.cr > config.filters.crMin && node.cr < config.filters.crMax)
+                .filter(node => node.cr >= config.filters.crMin && node.cr <= config.filters.crMax)
                 .filter(node => config.filters.sources.length === 0 || config.filters.sources.indexOf(node.source.toLowerCase()) !== -1)
-            if (verbose) console.log("Nodes remaining after filter:")
+            if (verbose) console.log("Nodes remaining after filter:", filtered_nodes)
             const random_choice = random_from_list(filtered_nodes)
             if (verbose) console.log(`No base node; randomly chose`, random_choice)
             if (random_choice) nodes.push(random_choice)
@@ -181,6 +187,7 @@ export const GenerateRandomEncounter =
                 }).filter(([node]) => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
                     .filter(([node]) => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
                     .filter(([node]) => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
+                    .filter(([node]) => node.cr >= config.filters.crMin && node.cr <= config.filters.crMax)
                     .filter(([node]) => config.filters.sources.length === 0 || config.filters.sources.indexOf(node.source.toLowerCase()) !== -1)
 
                 // If no monsters meet the min xp criteria, we don't use it.
@@ -217,7 +224,7 @@ export const GenerateRandomEncounter =
                     .filter(node => filter_node<Monster_Type_Key>(node, config.filters.types, 'type_'))
                     .filter(node => filter_node<Monster_Tag_Key>(node, config.filters.tags, 'tag_'))
                     .filter(node => filter_node<Monster_Environment_Key>(node, config.filters.envs, 'environment_'))
-                    .filter(node => node.cr > config.filters.crMin && node.cr < config.filters.crMax)
+                    .filter(node => node.cr >= config.filters.crMin && node.cr <= config.filters.crMax)
                     .filter(node => config.filters.sources.length === 0 || config.filters.sources.indexOf(node.source.toLowerCase()) !== -1)
 
                 if (valid_nodes_filtered.length > 0) {
@@ -355,27 +362,5 @@ export const GenerateRandomEncounter =
         return formatEncounter(encounter, locked_monsters)
 }
 
-export const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) => {
-    let {target, source, weight} = link
-    const tags_shared = share_tag(target, source, "count") as number
-    const langs_shared = share_language(target, source, "count") as number
-    const types_shared = share_type(target, source, "count") as number
-    const envs_shared = share_environment(target, source, "count") as number
 
-    if (tags_shared > 0) weight *= 2 * (tags_shared + 1)
-    if (langs_shared > 0) weight *= 2 + (0.6*langs_shared)
-    if (types_shared > 0) weight *= 2.4
-    if (envs_shared > 0) weight *= 1 + (0.2*envs_shared)
 
-    return weight
-}
-
-const formatEncounter = (encounter: StringTypeDict<number>, locked_monsters:string[]) => Object.keys(encounter).reduce(
-    (prev, key) => ({
-        ...prev,
-        [key]: {
-            count: encounter[key],
-            locked: locked_monsters.indexOf(key) !== -1
-        }
-    }), {} as StringTypeDict<CombatEntry>
-)

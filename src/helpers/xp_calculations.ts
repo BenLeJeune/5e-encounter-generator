@@ -141,6 +141,11 @@ export const CR_TO_XP = {
     30: 155000
 } as {[key:number]:number}
 
+export const XP_TO_CR = Object.keys(CR_TO_XP).reduce((prev, key) => ({
+    ...prev,
+    [CR_TO_XP[key as unknown as keyof typeof CR_TO_XP]]: Number(key)
+}), {} as {[key:number]:number})
+
 export const xp_multiplier = (num_monsters:number) => {
     switch(num_monsters) {
         case 1:
@@ -189,6 +194,7 @@ export const calculate_encounter_xp = (xp_num_pairs:[number, number][]) => {
 
 export const CRs = Object.keys(CR_TO_XP).map(cr => Number(cr)).sort((a, b) => a - b)
 
+export const XPs = Object.values(CR_TO_XP).map(xp => Number(xp)).sort((a, b) => a - b)
 
 export const clamp_cr = (cr:number) => {
 
@@ -207,8 +213,38 @@ export const clamp_cr = (cr:number) => {
         let below = CRs[i - 1]
         let above = CRs[i]
 
+
         let below_diff = Math.abs(below - cr)
         let above_diff = Math.abs(above - cr)
+
+        if (above_diff <= below_diff) return above
+        else return below
+    }
+
+    return 0
+}
+
+export const clamp_xp = (xp:number) => {
+
+    if (xp > 30) return 30
+    if (xp < 0) return 0
+
+    let i = 0
+    while (xp > XPs[i] && i < XPs.length) {
+        i += 1
+    }
+    // If we exceeded the XP limit, we clamp to 30
+    if (xp > XPs[i]) return 30
+
+    // If we can, compare the diff and return the nearest
+    if (i > 0 && i < XPs.length) {
+        let below = XPs[i - 1]
+        let above = XPs[i]
+
+
+        let below_diff = Math.abs(below - xp)
+        let above_diff = Math.abs(above - xp)
+
         if (above_diff <= below_diff) return above
         else return below
     }

@@ -1,6 +1,6 @@
 import {Link, Node, StringTypeDict} from "../types";
 import {share_type} from "../helpers/monster_helpers";
-import {adjusted_link_weight} from "./GenerateRandomEncounter";
+import {adjusted_link_weight} from "./GenerationUtils";
 import {weightedRandomChoice} from "../helpers/misc_helpers";
 
 export const RefreshMonster = (
