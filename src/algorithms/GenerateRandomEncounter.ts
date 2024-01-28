@@ -1,14 +1,14 @@
-import {Node, Link, StringTypeDict, Monster_Type_Key, Monster_Tag_Key, Monster_Environment_Key} from "./types"
-import {calculate_encounter_xp, CR_TO_XP, xp_multiplier} from "./helpers/xp_calculations";
-import {random_from_list, weightedRandomChoice} from "./helpers/misc_helpers";
-import {score as PredictCount} from "./models/CountPredictionModel";
-import {share_language, share_tag, share_type, share_environment} from "./helpers/monster_helpers";
-import {filter_node} from "./helpers/filter_utils";
-import {CombatEntry} from "./context/CombatContext";
+import {Node, Link, StringTypeDict, Monster_Type_Key, Monster_Tag_Key, Monster_Environment_Key} from "../types"
+import {calculate_encounter_xp, CR_TO_XP, xp_multiplier} from "../helpers/xp_calculations";
+import {random_from_list, weightedRandomChoice} from "../helpers/misc_helpers";
+import {score as PredictCount} from "../models/CountPredictionModel";
+import {share_language, share_tag, share_type, share_environment} from "../helpers/monster_helpers";
+import {filter_node} from "../helpers/filter_utils";
+import {CombatEntry} from "../context/CombatContext";
 
 // - ========: TITLE :======== -
 
-type GenerateEncounterConfig = {
+export type GenerateEncounterConfig = {
     // Different modes of generation
     generate_mode : "random" | "xp_unset",
     filters: {
@@ -355,7 +355,7 @@ export const GenerateRandomEncounter =
         return formatEncounter(encounter, locked_monsters)
 }
 
-const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) => {
+export const adjusted_link_weight = (link:{target:Node, source:Node, weight:number}) => {
     let {target, source, weight} = link
     const tags_shared = share_tag(target, source, "count") as number
     const langs_shared = share_language(target, source, "count") as number

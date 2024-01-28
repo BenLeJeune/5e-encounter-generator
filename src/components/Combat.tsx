@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {CombatContext} from "../context/CombatContext";
+import {CombatContext, CombatEntry} from "../context/CombatContext";
 import {
     calculateEncounterXP,
     calculatePartyXP,
@@ -12,21 +12,24 @@ import {
     getMonsterEnvironments,
     getTypeAndTag
 } from "../helpers/monster_parsers";
-import {Difficulty, Link, Node} from "../types";
-import {GenerateRandomEncounter} from "../GenerateRandomEncounter"
+import {Difficulty, Link, Node, StringTypeDict} from "../types";
+import {GenerateRandomEncounter} from "../algorithms/GenerateRandomEncounter"
 import {PlayerContext} from "../context/PlayerContext";
 import {FiltersContext} from "../context/FiltersContext";
 import {combat_counts} from "../helpers/monster_helpers";
-import {Lock, LockSlash} from "iconoir-react";
+import {FastArrowDown, FastArrowUp, Lock, LockSlash, Refresh, Shuffle, Xmark} from "iconoir-react";
+import {AdjustDifficulty} from "../algorithms/AdjustDifficulty";
+import {RefreshMonster} from "../algorithms/RefreshMonster";
 
 type CombatProps = {
     graph: {
         nodes:Node[],
         links:Link[]
     },
-    graphNodes:string[]
+    graphNodes:string[],
+    all_nodes: StringTypeDict<Node>
 }
-export default function Combat({graph, graphNodes}:CombatProps) {
+export default function Combat({graph, graphNodes, all_nodes}:CombatProps) {
 
     const monsterLookup = (name: string) => {
         const matches = graph.nodes.filter(m => m.id === name)
@@ -44,7 +47,7 @@ export default function Combat({graph, graphNodes}:CombatProps) {
 
     const generateEncounter = () => {
         // const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
-        //     Object.keys(combat), calculatePartyXP(players)[selectedDifficulty], numMonsters)
+        //     Object.keys(combat), calculatePartyXPs(players)[selectedDifficulty], numMonsters)
         const monsters = Object.keys(combat)
         const locked_monsters = monsters.filter(mon => combat[mon].locked)
         const thresholds = calculatePartyXP(players)
@@ -66,11 +69,6 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters, locked_monsters,
             undefined, true, config)
         setCombat(encounter)
-    }
-
-    const handleNumChange = (e:React.ChangeEvent<HTMLInputElement>) => {
-        e.preventDefault()
-        setNumMonsters(Number(e.target.value))
     }
 
     const clearEncounter = () => {
@@ -101,6 +99,27 @@ export default function Combat({graph, graphNodes}:CombatProps) {
         </h6>
     }
 
+    const adjust = (mode: "easier" | "harder"|"refresh") => {
+        const next_combat = {} as StringTypeDict<CombatEntry>
+        
+        Object.keys(combat).forEach(mon => {
+            if (combat[mon].locked) {
+                next_combat[mon] = combat[mon]
+            }
+            else {
+                let adjusted
+
+                if (mode === "refresh") adjusted = RefreshMonster(graph, mon, all_nodes, true)
+                else adjusted = AdjustDifficulty(graph, mon, mode, all_nodes, true)
+
+                next_combat[adjusted.monster] = combat[mon]
+                if (adjusted.error) console.error(adjusted.error)
+            }
+        })
+
+        setCombat(next_combat)
+    }
+
     return <div className="container mb-1 d-flex flex-column">
         <div className="row">
             <div className="col">
@@ -128,46 +147,27 @@ export default function Combat({graph, graphNodes}:CombatProps) {
             </div>
         </div>
         <div className="row">
-            <div className="row col-md-auto encounterButtons" id="generateEncounterButton">
-                <div className="col-auto">
-                    <button onClick={generateEncounter} id="generateEncounterButton" className="btn btn-outline-primary btn-lg leftbtn">
-                        Generate Encounter
-                    </button>
-                </div>
-                <div className="col mobileOnly">
-                    <button className="btn btn-lg btn-outline-danger" onClick={clearEncounter}>
-                        Clear
-                    </button>
-                </div>
-            </div>
-
-
-            <div className="col-md d-flex py-1 flex-column justify-content-center encounterButtons">
+            <div className="col-auto">
                 <div className="input-group">
-                    <select className="form-select"
-                            value={selectedDifficulty}
-                            onChange={e => {setSelectedDifficulty(e.target.value as Difficulty)}}
-                    >
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
-                        <option value="deadly">Deadly</option>
-                    </select>
-                    <input className="form-control" type="number" value={numMonsters} onChange={handleNumChange}/>
-                    {/*<select className="form-select">*/}
-                    {/*    <option selected value="random">Random</option>*/}
-                    {/*    /!*<option value="boss_minions">Boss & Minions</option>*!/*/}
-                    {/*    /!*<option value="2_monsters">2 Monsters</option>*!/*/}
-                    {/*</select>*/}
+                    <button className="btn btn-outline-primary d-flex align-items-center justify-content-evenly"
+                            onClick={() => adjust("refresh")}>
+                        <Shuffle/>
+                    </button>
+                    <button className="btn btn-outline-secondary d-flex align-items-center justify-content-evenly"
+                            onClick={() => adjust("easier")}>
+                        <FastArrowDown/> <span className="mx-2">Easier</span>
+                    </button>
+                    <button className="btn btn-outline-secondary d-flex align-items-center justify-content-evenly"
+                            onClick={() => adjust("harder")}>
+                        <FastArrowUp/> <span className="mx-2">Harder</span>
+                    </button>
+                    <button className="btn btn-outline-danger d-flex align-items-center justify-content-evenly"
+                            onClick={clearEncounter}>
+                        <Xmark/>
+                    </button>
                 </div>
-            </div>
-            <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons mobileHide">
-                <button className="btn btn-outline-danger" onClick={clearEncounter}>
-                    Clear
-                </button>
             </div>
         </div>
-
     </div>
 }
 

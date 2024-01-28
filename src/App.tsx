@@ -29,6 +29,7 @@ import SuggestionsInfo from "./components/SuggestionsInfo";
 import Suggestions from "./components/Suggestions";
 import {FiltersContext, Filters, DEFAULT_FILTERS} from "./context/FiltersContext";
 import {filter_node, filter_nodes} from "./helpers/filter_utils";
+import GenerateButtons from "./components/GenerateButtons";
 
 function App() {
 
@@ -121,8 +122,11 @@ function App() {
                     <div className="col-md-4 d-flex flex-column">
                         <div className="row">
                             <PlayersManager/>
-                            <hr className="my-4"/>
                         </div>
+                        <div className="row">
+                            {graphData ? <GenerateButtons graph={graphData}/> : <></>}
+                        </div>
+                        <hr className="my-4"/>
                         <div className="row flex-grow-1">
                             {graphData ? <Bestiary bestiary={filteredNodes} all_nodes={graphData.nodes} graphNodes={graphNodes}/> : <></>}
                         </div>
@@ -135,7 +139,7 @@ function App() {
                         </div>
                         <div className="row flex-grow-1">
                             {graphData ?
-                                <Combat graphNodes={graphNodes} graph={graphData}/>
+                                <Combat graphNodes={graphNodes} graph={graphData} all_nodes={all_nodes_ref.current}/>
                                 :  <></>}
                         </div>
                     </div>

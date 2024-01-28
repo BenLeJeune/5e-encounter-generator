@@ -7,11 +7,8 @@ export const toTitleCase = (phrase:string) => {
 };
 
 export const varUrl = (path:string) => {
-    // Wrap the url in a fetch statement with this, so it functions in both
-    // development (localhost) and production (benlejeune.com)
-    const root = window.location.host
-    if (root === 'localhost:3000') return "5e-encounter-generator/" + path
-    else return path
+    // This is no longer really needed, since we host on a subdomain now.
+    return path
 }
 
 export const weightedRandomChoice = (weights:{[choice:string]:number}) => {
