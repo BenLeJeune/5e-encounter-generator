@@ -137,7 +137,7 @@ export default function Combat({graph, graphNodes, all_nodes}:CombatProps) {
                     </button>
                     <button className="btn btn-outline-danger d-flex align-items-center justify-content-evenly"
                             onClick={clearEncounter}>
-                        <Xmark/>
+                        Clear
                     </button>
                 </div>
             </div>

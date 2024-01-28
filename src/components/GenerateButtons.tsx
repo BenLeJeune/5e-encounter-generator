@@ -14,6 +14,8 @@ type GenerateButtons_Props = {
     }
 }
 
+type GenMode = "solo" | "boss & minions" | "horde" | "random"
+
 export default function GenerateButtons({graph}: GenerateButtons_Props) {
 
     const players = useContext(PlayerContext)[0]
@@ -22,6 +24,9 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
 
     const [numMonsters, setNumMonsters] = useState<number|undefined>()
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty|"">("")
+
+    // advanded settings
+    const [genMode, setGenMode] = useState<GenMode|"">("")
 
     const handleNumChange = (e:React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
@@ -63,6 +68,41 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
     }
 
     return <div className="col">
+
+        <div className="row d-flex align-items-center justify-content-center">
+            <div className="col-auto">
+                <button data-bs-target="#MoreOptions" role="button" className="btn btn-sm text-muted"
+                        data-bs-toggle="collapse" aria-expanded="false" aria-controls="MoreOptions"
+                >
+                    Click for advanced options
+                </button>
+            </div>
+        </div>
+
+        <div className="collapse mb-2" id="MoreOptions">
+            <div className="card card-body">
+                <form>
+                    <div className="row">
+                        <div className="col-auto">
+                            <select id="genMode" className="form-select"
+                                    value={genMode}
+                                    onChange={e => setGenMode(e.target.value as GenMode)}
+                            >
+                                <option value="" disabled hidden>Select Mode</option>
+                                <option value="random">Random</option>
+                                <option value="solo">Solo</option>
+                                <option value="boss & minions">Boss & Minions</option>
+                                <option value="horde">Horde</option>
+                            </select>
+                        </div>
+                        <div className="col-auto">
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div className="row">
             <div className="row col-md-auto encounterButtons" id="generateEncounterButton">
                 <div className="col-auto">
@@ -70,13 +110,7 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
                         Random Encounter
                     </button>
                 </div>
-                <div className="col mobileOnly">
-                    <button className="btn btn-lg btn-outline-danger" onClick={clearEncounter}>
-                        Clear
-                    </button>
-                </div>
             </div>
-
 
             <div className="col-md d-flex py-1 flex-column justify-content-center encounterButtons">
                 <div className="input-group">
@@ -90,9 +124,11 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
                         <option value="hard">Hard</option>
                         <option value="deadly">Deadly</option>
                     </select>
-                    <input className="form-control" type="number" value={numMonsters} onChange={handleNumChange}/>
+                    <input className="form-control" placeholder={`e.g. 1`}
+                           type="number" value={numMonsters} onChange={handleNumChange}/>
                 </div>
             </div>
         </div>
+
     </div>
 }
