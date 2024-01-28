@@ -45,32 +45,6 @@ export default function Combat({graph, graphNodes, all_nodes}:CombatProps) {
     const players = useContext(PlayerContext)[0]
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('hard')
 
-    const generateEncounter = () => {
-        // const encounter = GenerateRandomEncounter(graph, bestiary, monsterStats,
-        //     Object.keys(combat), calculatePartyXPs(players)[selectedDifficulty], numMonsters)
-        const monsters = Object.keys(combat)
-        const locked_monsters = monsters.filter(mon => combat[mon].locked)
-        const thresholds = calculatePartyXP(players)
-        const xp_min = thresholds[selectedDifficulty]
-        const xp_max = thresholds[difficulty_increase(selectedDifficulty)]
-        const xp_lim = xp_max
-        console.log(xp_lim)
-        let config = filters.config.affectGenerator ? {
-            filters: {
-                types: filters.types,
-                tags: filters.tags,
-                envs: filters.envs,
-                sources: filters.sources,
-                crMin: filters.crMin,
-                crMax: filters.crMax
-            }
-        } : {}
-        console.log("Supplying configs:", config)
-        const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters, locked_monsters,
-            undefined, true, config)
-        setCombat(encounter)
-    }
-
     const clearEncounter = () => {
         setCombat({})
     }

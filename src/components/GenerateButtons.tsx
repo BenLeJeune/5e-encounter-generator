@@ -5,6 +5,7 @@ import {CombatContext} from "../context/CombatContext";
 import {FiltersContext} from "../context/FiltersContext";
 import {calculatePartyXP, difficulty_increase} from "../helpers/xp_calculations";
 import {GenerateRandomEncounter} from "../algorithms/GenerateRandomEncounter";
+import {random_from_list} from "../helpers/misc_helpers";
 
 type GenerateButtons_Props = {
     graph: {
@@ -19,8 +20,8 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
     const [combat, setCombat] = useContext(CombatContext)
     const [filters] = useContext(FiltersContext)
 
-    const [numMonsters, setNumMonsters] = useState(3)
-    const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('hard')
+    const [numMonsters, setNumMonsters] = useState<number|undefined>()
+    const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty|"">("")
 
     const handleNumChange = (e:React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
@@ -37,8 +38,12 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
         const monsters = Object.keys(combat)
         const locked_monsters = monsters.filter(mon => combat[mon].locked)
         const thresholds = calculatePartyXP(players)
-        const xp_min = thresholds[selectedDifficulty]
-        const xp_max = thresholds[difficulty_increase(selectedDifficulty)]
+        let diff = selectedDifficulty
+        if (diff === "") diff = random_from_list<Difficulty>(['easy', 'medium', 'hard'])
+        let num = numMonsters
+        if (!num) num = random_from_list([1, 2, 3, 4])
+        const xp_min = thresholds[diff]
+        const xp_max = thresholds[difficulty_increase(diff)]
         const xp_lim = xp_max
         console.log(xp_lim)
         let config = filters.config.affectGenerator ? {
@@ -52,7 +57,7 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
             }
         } : {}
         console.log("Supplying configs:", config)
-        const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, numMonsters, locked_monsters,
+        const encounter = GenerateRandomEncounter(graph, monsters, xp_lim, num, locked_monsters,
             undefined, true, config)
         setCombat(encounter)
     }
@@ -62,7 +67,7 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
             <div className="row col-md-auto encounterButtons" id="generateEncounterButton">
                 <div className="col-auto">
                     <button onClick={generateEncounter} id="generateEncounterButton" className="btn btn-outline-primary btn-lg leftbtn">
-                        Generate Encounter
+                        Random Encounter
                     </button>
                 </div>
                 <div className="col mobileOnly">
@@ -79,6 +84,7 @@ export default function GenerateButtons({graph}: GenerateButtons_Props) {
                             value={selectedDifficulty}
                             onChange={e => {setSelectedDifficulty(e.target.value as Difficulty)}}
                     >
+                        <option value="" disabled hidden>Select</option>
                         <option value="easy">Easy</option>
                         <option value="medium">Medium</option>
                         <option value="hard">Hard</option>
