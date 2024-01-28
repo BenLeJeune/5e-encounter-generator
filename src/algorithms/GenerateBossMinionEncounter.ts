@@ -44,12 +44,12 @@ export const GenerateBossMinionEncounter = (
     if (verbose) console.log("Chosen number of minions:", chosen_num_minions)
 
     const multiplier = xp_multiplier(chosen_num_minions + 1)
-    const total_xp_from_boss_cr = (cr:number) => {
+    const total_xp_from_boss_cr = (cr:number, min:boolean=false) => {
         const bp_1 = Math.max(cr - 2, cr / 2)
         const bp_2 = clamp_cr(bp_1 / 2)
         const minion_xp = CR_TO_XP[bp_2]
         const boss_xp = CR_TO_XP[cr]
-        const total = (minion_xp * chosen_num_minions + boss_xp) * multiplier
+        const total = (minion_xp * (min ? min_num_minions : chosen_num_minions) + boss_xp) * multiplier
         if (verbose) console.log(`Boss of CR ${cr} with ${chosen_num_minions} minions of cr ${bp_2} gives total xp ${total}`)
         return total
     }
@@ -61,6 +61,16 @@ export const GenerateBossMinionEncounter = (
         }
         else return Number(prev)
     }, 0)
+
+    // we can use this to detect if the boss
+    const min_boss_xp = Object.keys(CR_TO_XP).reduce((prev, cr) => {
+        const total_xp = total_xp_from_boss_cr(Number(cr), true)
+        if (total_xp < xp_lim) { // @ts-ignore
+            return Math.max(Number(prev), CR_TO_XP[cr] as number)
+        }
+        else return Number(prev)
+    }, 0)
+
     // the total amount of the xp we want to spend on the minions
     const minion_xp_lim = xp_lim - (target_boss_xp * multiplier)
     // adjusted for the minion combat - how much these would be worth by themselves
@@ -93,7 +103,8 @@ export const GenerateBossMinionEncounter = (
         {filters: {
             ...filters,
                 crMin: minion_min_cr, crMax: minion_max_cr
-            }}
+            }},
+        Object.keys(boss_encounter)
     )
 
     const encounter = Object.assign(boss_encounter, minions_encounter)

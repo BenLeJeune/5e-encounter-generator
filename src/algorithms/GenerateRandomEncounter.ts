@@ -24,7 +24,7 @@ export type GenerateEncounterConfig = {
 
 export const GenerateRandomEncounter =
     (graph:{nodes:Node[], links: Link[]}, monsters:string[], xp_lim:number, num:number, locked_monsters:string[],
-     gamma:number=0.3, verbose=false, conf:Partial<GenerateEncounterConfig>={}) =>
+     gamma:number=0.3, verbose=false, conf:Partial<GenerateEncounterConfig>={}, seed_monsters:string[] = []) =>
     {
         const default_config: GenerateEncounterConfig = {
             generate_mode: "random",
@@ -110,8 +110,11 @@ export const GenerateRandomEncounter =
             if (verbose) console.log(nodes, monsters)
         }
 
+        // 'Seed nodes' are used for connections, but aren't necessarily in the combat.
+        const seed_nodes = seed_monsters.map(monster_name => all_nodes[monster_name])
+
         // if there aren't any nodes supplied, we pick a source node at random
-        if (nodes.length === 0) {
+        if (nodes.length === 0 && seed_nodes.length === 0) {
             const max_xp = Math.min((xp_lim / xp_multiplier(num)) - ((num - 1) * min_xp), CR_TO_XP[config.filters.crMax])
             if (verbose) console.log("Initial max XP:", max_xp)
             const valid_nodes = graph.nodes.filter(node => node.xp <= max_xp && node.is_npc === 0 && node.xp >= min_xp)
@@ -160,9 +163,10 @@ export const GenerateRandomEncounter =
             const already_chosen_ids = nodes.map(node => node.id)
             if (verbose) console.log("Already chosen so far: ", already_chosen_ids)
             // For each node, we search for neighbors
-            for (let j = 0; j < nodes.length; j++) {
+            for (let j = 0; j < nodes.length + seed_nodes.length; j++) {
                 const discount = gamma ** j // nodes added later considered less
-                const current_node = nodes[j]
+                const current_node = j < nodes.length ? nodes[j] : seed_nodes[j - nodes.length]
+                if (verbose) console.log(j < nodes.length ? "Visiting source node" : "Visiting seed node" + current_node.id)
                 // Node-weight pairs
                 const neighbors = [...graph.links, ...inferred_links]
                     .filter(link => link.target.id === current_node.id || link.source.id === current_node.id)
