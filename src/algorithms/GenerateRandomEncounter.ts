@@ -141,7 +141,7 @@ export const GenerateRandomEncounter =
         }
 
         // Update the inferred links
-        nodes.forEach(node => {
+        [...nodes, ...seed_nodes].forEach(node => {
             inferred_links.push(...find_inferred_links(node))
         })
 

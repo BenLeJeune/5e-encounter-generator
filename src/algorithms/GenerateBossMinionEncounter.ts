@@ -50,7 +50,6 @@ export const GenerateBossMinionEncounter = (
         const minion_xp = CR_TO_XP[bp_2]
         const boss_xp = CR_TO_XP[cr]
         const total = (minion_xp * (min ? min_num_minions : chosen_num_minions) + boss_xp) * multiplier
-        if (verbose) console.log(`Boss of CR ${cr} with ${chosen_num_minions} minions of cr ${bp_2} gives total xp ${total}`)
         return total
     }
 
