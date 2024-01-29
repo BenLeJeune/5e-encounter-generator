@@ -29,7 +29,7 @@ export default function GenerateButtons({graph, all_nodes}: GenerateButtons_Prop
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty|"">("")
 
     // advanced settings
-    const [genMode, setGenMode] = useState<GenMode|"">("")
+    const [genMode, setGenMode] = useState<GenMode|"">("random")
 
     const handleNumChange = (e:React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
@@ -87,17 +87,20 @@ export default function GenerateButtons({graph, all_nodes}: GenerateButtons_Prop
     return <div className="col">
 
         <div className="row py-2">
-            <div className="col-md d-flex flex-column justify-content-center encounterButtons">
-                <select id="genMode" className="form-select"
-                        value={genMode}
-                        onChange={e => setGenMode(e.target.value as GenMode)}
-                >
-                    <option value="" disabled hidden>Select Mode</option>
-                    <option value="random">Random</option>
-                    <option value="solo">Solo</option>
-                    <option value="boss & minions">Boss & Minions</option>
-                    <option value="horde">Horde</option>
-                </select>
+            <div className="col-md-auto d-flex flex-column justify-content-center encounterButtons">
+                {/*<select id="genMode" className="form-select"*/}
+                {/*        value={genMode}*/}
+                {/*        onChange={e => setGenMode(e.target.value as GenMode)}*/}
+                {/*>*/}
+                {/*    <option value="" disabled hidden>Select Mode</option>*/}
+                {/*    <option value="random">Random</option>*/}
+                {/*    <option value="solo">Solo</option>*/}
+                {/*    <option value="boss & minions">Boss & Minions</option>*/}
+                {/*    <option value="horde">Horde</option>*/}
+                {/*</select>*/}
+                <button onClick={generateEncounter} id="generateEncounterButton" className="btn btn-outline-primary btn-lg leftbtn">
+                    Random Encounter
+                </button>
             </div>
             <div className="col-md d-flex flex-column justify-content-center encounterButtons">
                 <div className="input-group">
@@ -117,12 +120,12 @@ export default function GenerateButtons({graph, all_nodes}: GenerateButtons_Prop
             </div>
         </div>
 
-        <div className="row col-md-auto encounterButtons py-2" id="generateEncounterButton">
-            <div className="col-auto">
-                <button onClick={generateEncounter} id="generateEncounterButton" className="btn btn-outline-primary btn-lg leftbtn">
-                    Random Encounter
-                </button>
-            </div>
-        </div>
+        {/*<div className="row col-md-auto encounterButtons py-2" id="generateEncounterButton">*/}
+        {/*    <div className="col-auto">*/}
+        {/*        <button onClick={generateEncounter} id="generateEncounterButton" className="btn btn-outline-primary btn-lg leftbtn">*/}
+        {/*            Random Encounter*/}
+        {/*        </button>*/}
+        {/*    </div>*/}
+        {/*</div>*/}
     </div>
 }
